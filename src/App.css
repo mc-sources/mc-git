@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Design tokens — light defaults ──────────────────────────────────── */
+@theme {
+  --color-surface-base:     #fafafa;   /* zinc-50  */
+  --color-surface-elevated: #f4f4f5;   /* zinc-100 */
+  --color-surface-overlay:  #e4e4e7;   /* zinc-200 */
+  --color-surface-hover:    #e4e4e7;   /* zinc-200 */
+  --color-surface-active:   #d4d4d8;   /* zinc-300 */
+  --color-surface-border:   #d4d4d8;   /* zinc-300 */
+  --color-text-primary:     #18181b;   /* zinc-900 */
+  --color-text-secondary:   #71717a;   /* zinc-500 */
+  --color-text-muted:       #a1a1aa;   /* zinc-400 */
+  --color-accent:           #2563eb;   /* blue-600 */
+  --color-accent-text:      #ffffff;
+  --color-danger:           #dc2626;   /* red-600  */
+  --color-success:          #16a34a;   /* green-600 */
+}
+
+/* ─── Dark theme overrides ────────────────────────────────────────────── */
+.dark {
+  --color-surface-base:     #09090b;   /* zinc-950 */
+  --color-surface-elevated: #18181b;   /* zinc-900 */
+  --color-surface-overlay:  #27272a;   /* zinc-800 */
+  --color-surface-hover:    #3f3f46;   /* zinc-700 */
+  --color-surface-active:   #52525b;   /* zinc-600 */
+  --color-surface-border:   #52525b;   /* zinc-600 — was zinc-700, améliore la visibilité des séparateurs */
+  --color-text-primary:     #f4f4f5;   /* zinc-100 */
+  --color-text-secondary:   #a1a1aa;   /* zinc-400 */
+  --color-text-muted:       #8e8e9a;   /* ~zinc-450 — contraste ~6.3:1 */
+  --color-accent:           #3b82f6;   /* blue-500 */
+  --color-accent-text:      #ffffff;
+  --color-danger:           #f87171;   /* red-400  */
+  --color-success:          #4ade80;   /* green-400 */
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+    background: var(--color-surface-base);
+    color: var(--color-text-primary);
+    font-family: system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-hover);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-surface-active);
+  }
+}
