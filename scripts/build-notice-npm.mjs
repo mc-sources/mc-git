@@ -8,7 +8,7 @@
 //   npx license-checker-rseidelsohn --production --json \
 //     | node scripts/build-notice-npm.mjs > docs/THIRD-PARTY-NOTICES-npm.md
 //
-// Voir ANA-0001/T-0006 §7 pour le format de sortie attendu.
+// Voir docs/release.md (section « Régénération des notices de licences »).
 
 import { readFileSync } from "node:fs";
 

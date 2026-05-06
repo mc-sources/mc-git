@@ -1,6 +1,6 @@
 # Mc-Git
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0--only-green.svg)](LICENSE)
 [![Tauri 2](https://img.shields.io/badge/Tauri-2-yellow.svg)](https://v2.tauri.app)
 [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](https://www.rust-lang.org)
@@ -99,7 +99,7 @@ cd src-tauri && cargo check # vérification Rust seule (rapide)
 cd src-tauri && cargo test  # tests unitaires Rust
 ```
 
-Voir [`docs/SETUP.md`](docs/SETUP.md) pour la résolution des problèmes d'installation courants, et [`docs/specifications/techniques/add-command.md`](docs/specifications/techniques/add-command.md) pour la recette d'ajout d'une nouvelle commande git.
+Voir [`docs/SETUP.md`](docs/SETUP.md) pour la résolution des problèmes d'installation courants, et [`docs/add-command.md`](docs/add-command.md) pour la recette d'ajout d'une nouvelle commande git.
 
 ## Build de production
 
@@ -113,7 +113,7 @@ Les binaires sont générés dans `src-tauri/target/release/bundle/` :
 - **macOS** : `.dmg`, `.app`
 - **Windows** : `.msi`, `.exe` (NSIS)
 
-Le processus de release complet *(branche `release/X.Y.Z`, recette, UAT, tag, merge retour)* est documenté dans [`docs/specifications/techniques/release.md`](docs/specifications/techniques/release.md).
+Le processus de release complet *(branche `release/X.Y.Z`, tests, tag, merge retour)* est documenté dans [`docs/release.md`](docs/release.md).
 
 ## Architecture
 
@@ -128,7 +128,7 @@ store (Zustand)                importe @tauri-apps/api)    git/         (fonctio
 components                                                 commands/    (wrappers Tauri)
 ```
 
-Tous les détails — flux de données, conventions de nommage snake_case ↔ camelCase, politique de choix du backend git (`libgit2` / CLI `git`) — sont dans [`docs/specifications/techniques/architecture.md`](docs/specifications/techniques/architecture.md).
+Tous les détails — flux de données, conventions de nommage snake_case ↔ camelCase, politique de choix du backend git (`libgit2` / CLI `git`) — sont dans [`docs/architecture.md`](docs/architecture.md).
 
 <!-- TODO screenshot :
      docs/screenshots/architecture-diagram.png   — diagramme des couches Frontend/IPC/Backend
