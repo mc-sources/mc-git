@@ -10,6 +10,20 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.2] — 2026-05-06
+
+### Added
+
+- **Écran « À propos » dans les paramètres** : nouvel onglet *À propos* dans le modal Settings (FR/EN/ES) regroupant la version applicative, les conditions d'utilisation, la politique de confidentialité, et les attributions des dépendances tierces (Rust + npm) avec affichage pliable par paquet.
+- **Documents légaux embarqués** : `docs/legal/terms-of-use.en.md` (Terms of Use) et `docs/legal/privacy-policy.en.md` (Privacy Policy) en anglais, embarqués dans le binaire et exposés via les commandes Tauri `get_legal_document` et `get_third_party_notices`.
+- **Lien vers la Privacy Policy** depuis le `FeedbackDialog` (sous le textarea) — ouvre directement Settings → À propos → section Privacy.
+
+### Changed
+
+- Dépendance npm : ajout de `react-markdown` (rendu des documents légaux et des NOTICES). `docs/THIRD-PARTY-NOTICES-npm.md` régénéré en conséquence.
+
+---
+
 ## [0.1.1] — 2026-05-06
 
 ### Changed

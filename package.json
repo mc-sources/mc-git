@@ -3,7 +3,7 @@
   "private": true,
   "license": "GPL-3.0-only",
   "author": "Charles Martin-Gatignol",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,6 +21,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^16.6.1",
+    "react-markdown": "^10.1.0",
     "shiki": "^4.0.2",
     "tailwindcss": "^4.2.2",
     "zustand": "^5.0.12"

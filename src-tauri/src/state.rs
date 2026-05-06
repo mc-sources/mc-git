@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Mutex, MutexGuard};
 
+use crate::domain::ports::legal::LegalDocuments;
 use crate::domain::ports::repository::GitRepository;
 use crate::error::{AppError, Result};
+use crate::infrastructure::legal_impl::EmbeddedLegalDocuments;
 
 /// Internal state protected by a single mutex.
 ///
@@ -44,17 +46,27 @@ impl<'a> DerefMut for RepoGuard<'a> {
 /// `MutexGuard<Option<…>>` — no call sites needed updating.
 pub struct AppState {
     inner: Mutex<TabState>,
+    legal: Box<dyn LegalDocuments + Send + Sync>,
 }
 
 impl AppState {
     pub fn new() -> Self {
+        Self::with_legal(Box::new(EmbeddedLegalDocuments::new()))
+    }
+
+    pub fn with_legal(legal: Box<dyn LegalDocuments + Send + Sync>) -> Self {
         Self {
             inner: Mutex::new(TabState {
                 repo: None,
                 repo_pool: HashMap::new(),
                 active_tab_id: None,
             }),
+            legal,
         }
+    }
+
+    pub fn legal(&self) -> &(dyn LegalDocuments + Send + Sync) {
+        self.legal.as_ref()
     }
 
     fn lock_inner(&self) -> Result<MutexGuard<'_, TabState>> {

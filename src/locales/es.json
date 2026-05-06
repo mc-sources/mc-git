@@ -61,7 +61,24 @@
     "versionInfo": "La versión {{version}} se incluirá automáticamente.",
     "versionLabel": "Versión",
     "send": "Abrir en el correo",
-    "copy": "Copiar"
+    "copy": "Copiar",
+    "privacyNotice": "Al enviar este comentario, aceptas nuestra",
+    "privacyLink": "política de privacidad"
+  },
+  "about": {
+    "version.title": "Versión",
+    "version.description": "Cliente Git de escritorio libre, construido con Tauri 2 + Rust + React 19.",
+    "version.license": "Licencia: GPL-3.0-only.",
+    "terms.title": "Condiciones de uso",
+    "terms.summary": "Leer las condiciones de uso",
+    "privacy.title": "Política de privacidad",
+    "privacy.summary": "Leer la política de privacidad",
+    "notices.title": "Avisos de bibliotecas de terceros",
+    "notices.summary": "Ver atribuciones de bibliotecas de terceros",
+    "notices.empty": "Ninguna dependencia listada.",
+    "notices.target.rust": "Rust (cargo)",
+    "notices.target.npm": "npm",
+    "error": "Error al cargar: {{error}}"
   },
   "welcome": {
     "subtitle": "A git client · Tauri + React + Rust",
@@ -77,6 +94,7 @@
     "tab.app": "Aplicación",
     "tab.auth": "Autenticación",
     "tab.shortcuts": "Atajos",
+    "tab.about": "Acerca de",
     "shortcuts.global": "Global",
     "shortcuts.changes": "Changes — Commit",
     "shortcuts.dialogs": "Diálogos",

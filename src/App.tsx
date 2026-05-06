@@ -7,6 +7,7 @@ import { useTheme } from "./hooks/useTheme";
 import { useAutoFetch } from "./hooks/useAutoFetch";
 import { useProgress } from "./infrastructure/events/useProgress";
 import { GitRepositoryProvider } from "./infrastructure/GitRepositoryContext";
+import { LegalDocumentsProvider } from "./infrastructure/LegalDocumentsContext";
 import { AppShell } from "./components/templates/AppShell";
 import { LogPanel } from "./components/organisms/LogPanel";
 import { Toaster } from "./components/organisms/Toaster";
@@ -99,7 +100,9 @@ function App() {
 function AppWithProviders() {
   return (
     <GitRepositoryProvider>
-      <App />
+      <LegalDocumentsProvider>
+        <App />
+      </LegalDocumentsProvider>
     </GitRepositoryProvider>
   );
 }

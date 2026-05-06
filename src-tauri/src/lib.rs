@@ -8,7 +8,7 @@ pub mod logger;
 mod migrations;
 mod state;
 
-use commands::{auth, branch, cherry_pick, commit, config, diff, external_diff, file_editor, gitflow, gpg, history, merge, open_in_editor, rebase, remote, report, repository, stash, submodule, tag, status, terminal};
+use commands::{auth, branch, cherry_pick, commit, config, diff, external_diff, file_editor, gitflow, gpg, history, legal, merge, open_in_editor, rebase, remote, report, repository, stash, submodule, tag, status, terminal};
 use state::AppState;
 
 fn run_legacy_migrations() {
@@ -158,6 +158,9 @@ pub fn run() {
             gpg::list_gpg_keys,
             // External diff
             external_diff::open_external_diff,
+            // Legal
+            legal::get_legal_document,
+            legal::get_third_party_notices,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
