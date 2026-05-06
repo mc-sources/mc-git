@@ -138,10 +138,10 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
 
-    /// Minimal inline test fixture. No shared helper across modules — per
-    /// FEAT-134 / US-134-01 decision, the full TestRepo lives only in
-    /// `src-tauri/tests/common/mod.rs` for integration tests. Unit tests
-    /// stay self-contained per module with a local `setup_repo()`.
+    /// Minimal inline test fixture. No shared helper across modules: the full
+    /// TestRepo lives only in `src-tauri/tests/common/mod.rs` for integration
+    /// tests. Unit tests stay self-contained per module with a local
+    /// `setup_repo()`.
     fn setup_repo() -> (TempDir, git2::Repository) {
         let tmp = tempfile::tempdir().unwrap();
         let repo = git2::Repository::init(tmp.path()).unwrap();
