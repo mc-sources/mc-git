@@ -2,6 +2,7 @@ pub mod auth;
 pub mod gpg;
 pub mod external_diff;
 pub mod gitflow;
+pub mod legal;
 pub mod report;
 pub mod branch;
 pub mod cherry_pick;

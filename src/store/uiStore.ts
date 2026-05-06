@@ -53,6 +53,11 @@ interface UiStore {
   interactiveRebaseFromOid: string | null;
   setInteractiveRebaseFromOid: (oid: string | null) => void;
 
+  // Settings deep-link: when set, SettingsView opens on this tab and scrolls to
+  // the optional anchor on mount, then clears the request.
+  settingsRequest: { tab: string; anchor?: string } | null;
+  setSettingsRequest: (request: { tab: string; anchor?: string } | null) => void;
+
   // Tab switch — resets all transient UI state
   reset: () => void;
 
@@ -97,6 +102,9 @@ export const useUiStore = create<UiStore>((set) => ({
 
   interactiveRebaseFromOid: null,
   setInteractiveRebaseFromOid: (interactiveRebaseFromOid) => set({ interactiveRebaseFromOid }),
+
+  settingsRequest: null,
+  setSettingsRequest: (settingsRequest) => set({ settingsRequest }),
 
   diffMode: loadPref<DiffMode>("diffMode", "unified"),
   setDiffMode: (diffMode) => {

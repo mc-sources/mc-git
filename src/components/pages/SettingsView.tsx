@@ -20,8 +20,9 @@ import type { SshKeyInfo } from "../../domain/ports/IGitRepository";
 import { toast } from "../../store/toastStore";
 import { useTranslation } from "react-i18next";
 import { copyToClipboard, saveReport, listGpgKeys } from "../../services/systemService";
+import { AboutView } from "./about/AboutView";
 
-type Tab = "repo" | "app" | "auth" | "shortcuts";
+type Tab = "repo" | "app" | "auth" | "shortcuts" | "about";
 
 const THEME_VALUES: Theme[] = ["dark", "light", "system"];
 const LANG_OPTIONS: { value: Lang; labelKey: string }[] = [
@@ -34,12 +35,24 @@ export function SettingsView() {
   const repo = useGitRepository();
   const { currentRepo, setCurrentRepo } = useRepoStore();
   const { setStatus, setBranches, setLog, setGraphCommits } = useGitStore();
-  const { setActiveView, setSelectedFile, setCurrentDiff, setCurrentCommitDetail } = useUiStore();
+  const { setActiveView, setSelectedFile, setCurrentDiff, setCurrentCommitDetail, settingsRequest, setSettingsRequest } = useUiStore();
   const { t } = useTranslation();
   const { theme, setTheme, lang, setLang, editorCommand, setEditorCommand, diffToolCommand, setDiffToolCommand, backend, setBackend, easyMode, setEasyMode, autoFetch, setAutoFetch, autoFetchIntervalMinutes, setAutoFetchIntervalMinutes } = useSettingsStore();
   const { entries: logEntries } = useLogStore();
 
   const [tab, setTab] = useState<Tab>("repo");
+  const [aboutAnchor, setAboutAnchor] = useState<string | undefined>(undefined);
+
+  // Honor a deep-link request to open Settings on a specific tab/anchor.
+  useEffect(() => {
+    if (!settingsRequest) return;
+    const requested = settingsRequest.tab as Tab;
+    if (["repo", "app", "auth", "shortcuts", "about"].includes(requested)) {
+      setTab(requested);
+      setAboutAnchor(settingsRequest.anchor);
+    }
+    setSettingsRequest(null);
+  }, [settingsRequest, setSettingsRequest]);
   const [gitBinaryInfo, setGitBinaryInfo] = useState<{ path: string; version: string } | null>(null);
   const [gitBinaryError, setGitBinaryError] = useState(false);
   const [name, setName] = useState("");
@@ -262,7 +275,7 @@ export function SettingsView() {
     <div className="flex flex-col h-full overflow-hidden">
       {/* Tab bar */}
       <div className="flex border-b border-surface-border px-4 shrink-0">
-        {(["repo", "app", "auth", "shortcuts"] as Tab[]).map((tabId) => (
+        {(["repo", "app", "auth", "shortcuts", "about"] as Tab[]).map((tabId) => (
           <button
             key={tabId}
             onClick={() => setTab(tabId)}
@@ -583,6 +596,10 @@ export function SettingsView() {
               <Shortcut keys={[t("settings.shortcuts.key.escape")]} label={t("settings.shortcuts.closeMenu")} />
             </ShortcutGroup>
           </div>
+        )}
+
+        {tab === "about" && (
+          <AboutView scrollAnchor={aboutAnchor} />
         )}
 
         {tab === "auth" && (

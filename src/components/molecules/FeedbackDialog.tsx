@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { FEEDBACK_EMAIL } from "../../config";
+import { useUiStore } from "../../store/uiStore";
 
 type FeedbackType = "bug" | "suggestion" | "other";
 
@@ -12,9 +13,16 @@ interface Props {
 
 export function FeedbackDialog({ version, onClose }: Props) {
   const { t } = useTranslation();
+  const { setActiveView, setSettingsRequest } = useUiStore();
   const [feedbackType, setFeedbackType] = useState<FeedbackType>("bug");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  const openPrivacyPolicy = () => {
+    setSettingsRequest({ tab: "about", anchor: "privacy" });
+    setActiveView("settings");
+    onClose();
+  };
 
   const handleSend = async () => {
     if (!message.trim()) return;
@@ -94,6 +102,19 @@ export function FeedbackDialog({ version, onClose }: Props) {
           {/* Version info */}
           <p className="text-xs text-text-muted">
             {t("feedback.versionInfo", { version })}
+          </p>
+
+          {/* Privacy notice */}
+          <p className="text-xs text-text-muted">
+            {t("feedback.privacyNotice")}{" "}
+            <button
+              type="button"
+              onClick={openPrivacyPolicy}
+              className="underline text-text-secondary hover:text-text-primary transition-colors"
+            >
+              {t("feedback.privacyLink")}
+            </button>
+            .
           </p>
         </div>
 
