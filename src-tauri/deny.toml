@@ -1,8 +1,6 @@
 # deny.toml — Policy cargo-deny pour Mc-Git
 #
-# Matérialisation exécutable de la matrice de compatibilité GPL-3.0-only
-# issue de l'analyse ANA-0001 (voir
-# project.management/archive/analyses/ANA-0001-audit-licences-dependances/T-0002/).
+# Matérialisation exécutable de la matrice de compatibilité avec GPL-3.0-only.
 #
 # Licence du projet Mc-Git : GPL-3.0-only — voir ../LICENSE.
 
@@ -15,7 +13,7 @@ all-features = true
 version = 2
 confidence-threshold = 0.93
 
-# Licences autorisées (matrice ANA-0001/T-0002 §3.1 et §3.2).
+# Licences autorisées : permissives compatibles GPL-3.0-only + GPL-3.0-only.
 # Liste calée sur ce que l'arbre Cargo de Mc-Git utilise **effectivement** —
 # les licences compatibles mais non encore rencontrées seront ajoutées au fil
 # de l'évolution des dépendances.
@@ -34,8 +32,7 @@ allow = [
     "MPL-2.0",
     "CC0-1.0",
     # Boost Software License 1.0 — OSI-approved, FSF-Free, compatible GPL-3.0.
-    # Non listée dans la matrice ANA-0001/T-0002 §3.1 car usage marginal attendu,
-    # ajoutée ici pour `clipboard-win` / `error-code` (transitif via arboard).
+    # Ajoutée pour `clipboard-win` / `error-code` (transitif via arboard).
     "BSL-1.0",
     # Unicode (encoding_rs, unicode-ident, …)
     "Unicode-3.0",
@@ -44,14 +41,14 @@ allow = [
 ]
 
 # Exceptions par crate — à remplir si cargo deny check remonte une licence
-# non standard mais légitime (voir ANA-0001/T-0005).
+# non standard mais légitime.
 # exceptions = [
 #     { name = "…", allow = ["…"] },
 # ]
 
 # Clarifications — une section [[licenses.clarify]] par crate dont le champ
-# SPDX est manquant ou ambigu. Candidats typiques identifiés en ANA-0001/T-0005
-# (ring, webpki, untrusted). À ajouter dynamiquement après premier check.
+# SPDX est manquant ou ambigu. Candidats typiques (ring, webpki, untrusted).
+# À ajouter dynamiquement après premier check.
 
 # ─── Bans (multi-versions, wildcards) ───────────────────────────────────────
 
@@ -65,7 +62,7 @@ wildcards = "deny"
 unknown-registry = "deny"
 unknown-git = "deny"
 
-# ─── Advisories (hors scope FEAT-123) ───────────────────────────────────────
+# ─── Advisories ─────────────────────────────────────────────────────────────
 # La sécurité (CVE, advisories RustSec) fait l'objet d'un audit séparé.
 # `cargo deny check licenses` ne consulte pas cette section.
 

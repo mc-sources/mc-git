@@ -4,7 +4,7 @@
 # THIRD-PARTY-NOTICES-rust.md.
 #
 # Cette liste est alignée sur `deny.toml` (mêmes licences, même justification
-# issue de la matrice ANA-0001/T-0002).
+# de compatibilité avec GPL-3.0-only).
 
 accepted = [
     "MIT",
@@ -21,9 +21,9 @@ accepted = [
     "GPL-3.0-only",
 ]
 
-# Dépendances de build et de test ne sont pas distribuées dans le binaire Mc-Git
-# (cohérent ANA-0001/T-0002 §5 — seul ce qui est embarqué au runtime a des
-# obligations d'attribution au sens GPL-3.0-only).
+# Dépendances de build et de test ne sont pas distribuées dans le binaire Mc-Git :
+# seul ce qui est embarqué au runtime a des obligations d'attribution au sens
+# GPL-3.0-only.
 ignore-build-dependencies = true
 ignore-dev-dependencies = true
 

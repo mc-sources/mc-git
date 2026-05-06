@@ -136,15 +136,11 @@ Tous les détails — flux de données, conventions de nommage snake_case ↔ ca
 
 ## Contribuer
 
-Ce projet suit le **mode startup v2** défini dans le repo frère [`claude.shared`](../../../claude.shared/mods/startup/v2/). Le cycle de développement est :
+Le développement suit un cycle classique de feature branches partant de `dev`, avec revue de code avant merge. Les versions sont taguées sur `main` (`vX.Y.Z`).
 
-```
-Init → Conception (Analyse + Architecture + Design + Planning) → Réalisation (epic par epic) → Retours d'utilisation → Nouveau cycle
-```
+Convention de nommage des branches : `feat/<courte-description>` pour une fonctionnalité, `fix/<courte-description>` pour un correctif, `hotfix/<courte-description>` pour un correctif urgent en production.
 
-Les nouvelles fonctionnalités et corrections sont organisées en **features** (`project.management/backlog/FEAT-NNNN-[slug]/`) regroupées en **epics datés** (`project.management/epics/EPIC-NNNN-YYYY-MM-[slug]/`). Chaque user story passe par une branche `feat/US-NNNN-[slug]` mergée sur `dev` avec revue de code.
-
-> 📄 **CONTRIBUTING.md** (guide détaillé : style de commit, PR template, code of conduct) — *à venir via la feature FEAT-114*.
+> 📄 **CONTRIBUTING.md** (guide détaillé : style de commit, PR template, code of conduct) — *à venir*.
 
 Pour comprendre la structure de documentation du projet, voir [`docs/README.md`](docs/README.md).
 

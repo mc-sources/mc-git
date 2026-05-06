@@ -1,4 +1,4 @@
-// Migration des répertoires utilisateur tsgit → mcgit (FEAT-0140 / US-0004).
+// Migration des répertoires utilisateur tsgit → mcgit.
 //
 // Couvre :
 //   - `~/.config/tsgit/`        → `~/.config/mcgit/`        (trusted_hosts)
