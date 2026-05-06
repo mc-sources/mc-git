@@ -1,6 +1,6 @@
 # Mc-Git
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0--only-green.svg)](LICENSE)
 [![Tauri 2](https://img.shields.io/badge/Tauri-2-yellow.svg)](https://v2.tauri.app)
 [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](https://www.rust-lang.org)
