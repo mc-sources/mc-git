@@ -10,6 +10,16 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.4] — 2026-05-07
+
+### Added
+
+- **Pipeline de release automatique** : nouveau workflow `.github/workflows/release.yml` déclenché sur push de tag `v*.*.*` (ou via `workflow_dispatch` manuel). Le workflow build l'app Tauri sur Ubuntu / macOS / Windows en parallèle via [`tauri-apps/tauri-action@v0`](https://github.com/tauri-apps/tauri-action), crée une GitHub Release sur le tag courant et y attache l'ensemble des bundles (`.deb`, `.AppImage`, `.dmg`, `.msi`, `.exe`).
+- Job préliminaire `extract-changelog` qui parse la section `[X.Y.Z]` du `CHANGELOG.md` et l'utilise comme corps de la release publiée.
+- Section « Build des artefacts de production » de `docs/release.md` mise à jour : la procédure officielle est désormais le déclenchement du workflow CI sur tag, la procédure manuelle est conservée comme fallback. Note sur l'absence de signature de code (acceptable sur le cycle `0.x`).
+
+---
+
 ## [0.1.3] — 2026-05-07
 
 ### Added
