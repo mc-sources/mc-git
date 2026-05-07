@@ -18,7 +18,11 @@ pub async fn get_file_diff(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.get_file_diff(&path, staged, ignore_whitespace)
     });
-    log_result(&app, &format!("get_file_diff({path}, staged={staged}, ignore_ws={ignore_whitespace})"), result)
+    log_result(
+        &app,
+        &format!("get_file_diff({path}, staged={staged}, ignore_ws={ignore_whitespace})"),
+        result,
+    )
 }
 
 #[tauri::command]
@@ -49,7 +53,11 @@ pub async fn get_commit_file_diff(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.get_commit_file_diff(&oid, &path, ignore_whitespace)
     });
-    log_result(&app, &format!("get_commit_file_diff({oid}, {path})"), result)
+    log_result(
+        &app,
+        &format!("get_commit_file_diff({oid}, {path})"),
+        result,
+    )
 }
 
 #[tauri::command]

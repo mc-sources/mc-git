@@ -1,11 +1,16 @@
-use std::cell::UnsafeCell;
 use git2::Repository;
+use std::cell::UnsafeCell;
 
 use crate::domain::ports::repository::GitRepository;
 use crate::error::Result;
-use crate::git::{blame, branch, cherry_pick, commit, config, diff, gitflow, history, merge, patch, rebase, reflog, remote, repository as git_repository, stash, status, submodule, tag};
 use crate::git::types::{
-    BlameLine, BranchInfo, CherryPickStatus, CommitDetail, CommitSummary, FileDiff, GitFlowConfig, LogFilters, MergeStatus, RebaseEntry, RebaseStatus, RebaseStep, ReflogEntry, RemoteFetchResult, RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
+    BlameLine, BranchInfo, CherryPickStatus, CommitDetail, CommitSummary, FileDiff, GitFlowConfig,
+    LogFilters, MergeStatus, RebaseEntry, RebaseStatus, RebaseStep, ReflogEntry, RemoteFetchResult,
+    RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
+};
+use crate::git::{
+    blame, branch, cherry_pick, commit, config, diff, gitflow, history, merge, patch, rebase,
+    reflog, remote, repository as git_repository, stash, status, submodule, tag,
 };
 
 /// Concrete implementation of `GitRepository` backed by `git2-rs`.
@@ -26,15 +31,21 @@ unsafe impl Send for Git2Repository {}
 
 impl Git2Repository {
     pub fn open(path: &str) -> Result<Self> {
-        Ok(Self { inner: UnsafeCell::new(git_repository::open(path)?) })
+        Ok(Self {
+            inner: UnsafeCell::new(git_repository::open(path)?),
+        })
     }
 
     pub fn init(path: &str) -> Result<Self> {
-        Ok(Self { inner: UnsafeCell::new(git_repository::init(path)?) })
+        Ok(Self {
+            inner: UnsafeCell::new(git_repository::init(path)?),
+        })
     }
 
     pub fn from_raw(repo: Repository) -> Self {
-        Self { inner: UnsafeCell::new(repo) }
+        Self {
+            inner: UnsafeCell::new(repo),
+        }
     }
 
     fn repo(&self) -> &Repository {
@@ -106,7 +117,12 @@ impl GitRepository for Git2Repository {
         patch::stage_hunk(self.repo(), path, hunk_index, selected)
     }
 
-    fn unstage_hunk(&self, path: &str, hunk_index: usize, selected: Option<&[usize]>) -> Result<()> {
+    fn unstage_hunk(
+        &self,
+        path: &str,
+        hunk_index: usize,
+        selected: Option<&[usize]>,
+    ) -> Result<()> {
         patch::unstage_hunk(self.repo(), path, hunk_index, selected)
     }
 
@@ -162,11 +178,22 @@ impl GitRepository for Git2Repository {
         diff::get_commit_diff(self.repo(), oid, ignore_whitespace)
     }
 
-    fn get_commit_file_diff(&self, commit_oid: &str, path: &str, ignore_whitespace: bool) -> Result<FileDiff> {
+    fn get_commit_file_diff(
+        &self,
+        commit_oid: &str,
+        path: &str,
+        ignore_whitespace: bool,
+    ) -> Result<FileDiff> {
         diff::get_commit_file_diff(self.repo(), commit_oid, path, ignore_whitespace)
     }
 
-    fn get_log(&self, limit: usize, offset: usize, branch: Option<&str>, filters: Option<&LogFilters>) -> Result<Vec<CommitSummary>> {
+    fn get_log(
+        &self,
+        limit: usize,
+        offset: usize,
+        branch: Option<&str>,
+        filters: Option<&LogFilters>,
+    ) -> Result<Vec<CommitSummary>> {
         history::get_log(self.repo(), limit, offset, branch, filters)
     }
 
@@ -218,7 +245,11 @@ impl GitRepository for Git2Repository {
         rebase::get_interactive_rebase_commits(self.repo(), upstream_oid)
     }
 
-    fn apply_interactive_rebase(&self, upstream_oid: &str, steps: Vec<RebaseStep>) -> Result<RebaseStatus> {
+    fn apply_interactive_rebase(
+        &self,
+        upstream_oid: &str,
+        steps: Vec<RebaseStep>,
+    ) -> Result<RebaseStatus> {
         rebase::apply_interactive_rebase(self.repo(), upstream_oid, steps)
     }
 
@@ -292,9 +323,9 @@ impl GitRepository for Git2Repository {
                 "Le force push avec lease nécessite git installé sur ce système (libgit2 ne supporte pas --force-with-lease).".into(),
             ));
         }
-        let workdir = self.repo()
-            .workdir()
-            .ok_or_else(|| crate::error::AppError::Other("Dépôt bare — pas de répertoire de travail".into()))?;
+        let workdir = self.repo().workdir().ok_or_else(|| {
+            crate::error::AppError::Other("Dépôt bare — pas de répertoire de travail".into())
+        })?;
         crate::git::force_push::push_force_with_lease(workdir, remote_name, branch)
     }
 
@@ -356,7 +387,12 @@ impl GitRepository for Git2Repository {
         tag::delete_remote_tag(self.repo(), remote_name, tag_name)
     }
 
-    fn stash_save(&self, message: Option<&str>, include_untracked: bool, keep_index: bool) -> Result<String> {
+    fn stash_save(
+        &self,
+        message: Option<&str>,
+        include_untracked: bool,
+        keep_index: bool,
+    ) -> Result<String> {
         stash::stash_save(self.repo_mut(), message, include_untracked, keep_index)
     }
 
@@ -385,14 +421,16 @@ impl GitRepository for Git2Repository {
     }
 
     fn start_gitflow_branch(&self, kind: &str, name: &str) -> Result<BranchInfo> {
-        let config = gitflow::read_gitflow_config(self.repo())
-            .ok_or_else(|| crate::error::AppError::Other("Git-flow non initialisé sur ce dépôt".into()))?;
+        let config = gitflow::read_gitflow_config(self.repo()).ok_or_else(|| {
+            crate::error::AppError::Other("Git-flow non initialisé sur ce dépôt".into())
+        })?;
         gitflow::start_branch(self.repo(), kind, name, &config)
     }
 
     fn finish_gitflow_branch(&self, kind: &str, name: &str) -> Result<()> {
-        let config = gitflow::read_gitflow_config(self.repo())
-            .ok_or_else(|| crate::error::AppError::Other("Git-flow non initialisé sur ce dépôt".into()))?;
+        let config = gitflow::read_gitflow_config(self.repo()).ok_or_else(|| {
+            crate::error::AppError::Other("Git-flow non initialisé sur ce dépôt".into())
+        })?;
         gitflow::finish_branch(self.repo(), kind, name, &config)
     }
 

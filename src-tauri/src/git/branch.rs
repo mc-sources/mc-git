@@ -6,10 +6,7 @@ use crate::git::types::BranchInfo;
 fn branch_info(repo: &Repository, branch: &git2::Branch, is_remote: bool) -> Result<BranchInfo> {
     let name = branch.name()?.unwrap_or("").to_string();
     let is_head = branch.is_head();
-    let head_oid = branch
-        .get()
-        .target()
-        .map(|o| o.to_string());
+    let head_oid = branch.get().target().map(|o| o.to_string());
 
     let (upstream, ahead, behind) = if !is_remote {
         match branch.upstream() {
@@ -67,7 +64,10 @@ pub fn create_branch(repo: &Repository, name: &str, from_ref: &str) -> Result<Br
     let commit = obj.peel_to_commit()?;
     let mut branch = repo.branch(name, &commit, false)?;
     // REQ-BR-023 — if from_ref resolves to a remote tracking ref, set upstream automatically
-    if repo.find_reference(&format!("refs/remotes/{from_ref}")).is_ok() {
+    if repo
+        .find_reference(&format!("refs/remotes/{from_ref}"))
+        .is_ok()
+    {
         let _ = branch.set_upstream(Some(from_ref));
     }
     branch_info(repo, &branch, false)
@@ -91,12 +91,18 @@ pub fn delete_branch(repo: &Repository, name: &str, force: bool) -> Result<()> {
         branch.delete()?;
     } else {
         if branch.is_head() {
-            return Err(AppError::Other("Cannot delete the checked-out branch".into()));
+            return Err(AppError::Other(
+                "Cannot delete the checked-out branch".into(),
+            ));
         }
         // Verify branch is fully merged into HEAD before deleting
-        let branch_oid = branch.get().target()
+        let branch_oid = branch
+            .get()
+            .target()
             .ok_or_else(|| AppError::Other(format!("Branch '{name}' has no direct target")))?;
-        let head_oid = repo.head()?.target()
+        let head_oid = repo
+            .head()?
+            .target()
             .ok_or_else(|| AppError::Other("HEAD has no direct target".into()))?;
         let (ahead, _) = repo.graph_ahead_behind(branch_oid, head_oid)?;
         if ahead > 0 {
@@ -115,7 +121,11 @@ pub fn rename_branch(repo: &Repository, old_name: &str, new_name: &str) -> Resul
 
 /// REQ-BR-023 — Set (or change) the upstream tracking ref for a local branch.
 /// `upstream` is the remote tracking branch name, e.g. `origin/main`.
-pub fn set_branch_upstream(repo: &Repository, branch_name: &str, upstream: &str) -> Result<BranchInfo> {
+pub fn set_branch_upstream(
+    repo: &Repository,
+    branch_name: &str,
+    upstream: &str,
+) -> Result<BranchInfo> {
     let mut branch = repo.find_branch(branch_name, BranchType::Local)?;
     branch.set_upstream(Some(upstream))?;
     branch_info(repo, &branch, false)
@@ -140,12 +150,16 @@ pub fn checkout_remote_branch(repo: &Repository, remote_branch_name: &str) -> Re
         .flatten()
         .find(|r| remote_branch_name.starts_with(&format!("{r}/")))
         .map(|r| r.to_string())
-        .ok_or_else(|| AppError::Other(format!("Remote introuvable pour : {remote_branch_name}")))?;
+        .ok_or_else(|| {
+            AppError::Other(format!("Remote introuvable pour : {remote_branch_name}"))
+        })?;
 
     let local_name = &remote_branch_name[remote_name.len() + 1..];
 
     if local_name.is_empty() {
-        return Err(AppError::Other(format!("Nom de branche invalide : {remote_branch_name}")));
+        return Err(AppError::Other(format!(
+            "Nom de branche invalide : {remote_branch_name}"
+        )));
     }
 
     // If a local branch already exists with that name, just check it out
@@ -192,7 +206,8 @@ mod tests {
             let tree_oid = index.write_tree().unwrap();
             let tree = repo.find_tree(tree_oid).unwrap();
             let sig = repo.signature().unwrap();
-            repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[]).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[])
+                .unwrap();
         }
         (tmp, repo)
     }

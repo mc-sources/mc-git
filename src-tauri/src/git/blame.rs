@@ -1,5 +1,5 @@
-use std::path::Path;
 use git2::Repository;
+use std::path::Path;
 
 use crate::error::{AppError, Result};
 use crate::git::types::BlameLine;
@@ -26,7 +26,8 @@ pub fn get_blame(
         Some(oid) => {
             let commit = repo.find_commit(oid)?;
             let tree = commit.tree()?;
-            let entry = tree.get_path(Path::new(path))
+            let entry = tree
+                .get_path(Path::new(path))
                 .map_err(|_| AppError::Other(format!("'{path}' not found at commit {oid}")))?;
             let blob = entry
                 .to_object(repo)?

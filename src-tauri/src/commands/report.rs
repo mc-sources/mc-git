@@ -2,8 +2,9 @@ use crate::error::Result;
 
 #[tauri::command]
 pub fn save_report(path: String, content: String) -> Result<()> {
-    std::fs::write(&path, content.as_bytes())
-        .map_err(|e| crate::error::AppError::Other(format!("Impossible d'écrire le rapport : {e}")))?;
+    std::fs::write(&path, content.as_bytes()).map_err(|e| {
+        crate::error::AppError::Other(format!("Impossible d'écrire le rapport : {e}"))
+    })?;
     Ok(())
 }
 
@@ -16,16 +17,16 @@ pub fn copy_to_clipboard(text: String) -> Result<()> {
     std::thread::spawn(move || {
         match arboard::Clipboard::new() {
             Err(e) => {
-                let _ = ready_tx.send(Err(crate::error::AppError::Other(
-                    format!("Presse-papier inaccessible : {e}"),
-                )));
+                let _ = ready_tx.send(Err(crate::error::AppError::Other(format!(
+                    "Presse-papier inaccessible : {e}"
+                ))));
             }
             Ok(mut cb) => {
                 match cb.set_text(&text) {
                     Err(e) => {
-                        let _ = ready_tx.send(Err(crate::error::AppError::Other(
-                            format!("Impossible de copier : {e}"),
-                        )));
+                        let _ = ready_tx.send(Err(crate::error::AppError::Other(format!(
+                            "Impossible de copier : {e}"
+                        ))));
                     }
                     Ok(()) => {
                         let _ = ready_tx.send(Ok(()));

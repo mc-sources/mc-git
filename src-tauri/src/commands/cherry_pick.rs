@@ -6,7 +6,11 @@ use crate::logger::log_result;
 use crate::state::AppState;
 
 #[tauri::command]
-pub fn cherry_pick(oid: String, app: AppHandle, state: State<AppState>) -> Result<CherryPickStatus> {
+pub fn cherry_pick(
+    oid: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<CherryPickStatus> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;

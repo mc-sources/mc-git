@@ -1,7 +1,9 @@
 # Mc-Git
 
-[![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-0.1.3-blue.svg)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0--only-green.svg)](LICENSE)
+[![CI](https://github.com/mc-sources/mc-git/actions/workflows/tests.yml/badge.svg)](https://github.com/mc-sources/mc-git/actions/workflows/tests.yml)
+[![Coverage](https://codecov.io/gh/mc-sources/mc-git/branch/main/graph/badge.svg)](https://codecov.io/gh/mc-sources/mc-git)
 [![Tauri 2](https://img.shields.io/badge/Tauri-2-yellow.svg)](https://v2.tauri.app)
 [![Rust](https://img.shields.io/badge/Rust-stable-orange.svg)](https://www.rust-lang.org)
 [![React 19](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)

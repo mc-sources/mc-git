@@ -184,7 +184,9 @@ pub fn write_and_stage_file(repo: &Repository, path: &str, content: &str) -> Res
     // Clean up any ~HEAD / ~BRANCH files left by an "added by both" (AA) conflict.
     if let (Some(parent), Some(filename)) = (
         full_path.parent(),
-        std::path::Path::new(path).file_name().map(|n| n.to_string_lossy().to_string()),
+        std::path::Path::new(path)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string()),
     ) {
         let prefix = format!("{filename}~");
         if let Ok(entries) = std::fs::read_dir(parent) {
@@ -262,11 +264,13 @@ pub fn discard_all(repo: &Repository) -> Result<()> {
     // Restore all tracked modified/deleted files to their index state.
     let mut cb = git2::build::CheckoutBuilder::new();
     cb.force().update_index(true);
-    repo.checkout_index(None, Some(&mut cb))
-        .map_err(|e| crate::error::AppError::Other(format!("Impossible d'annuler les modifications : {e}")))?;
+    repo.checkout_index(None, Some(&mut cb)).map_err(|e| {
+        crate::error::AppError::Other(format!("Impossible d'annuler les modifications : {e}"))
+    })?;
 
     // Remove untracked files and directories.
-    let statuses = repo.statuses(None)
+    let statuses = repo
+        .statuses(None)
         .map_err(|e| crate::error::AppError::Other(e.to_string()))?;
     for entry in statuses.iter() {
         if entry.status().contains(git2::Status::WT_NEW) {
@@ -293,7 +297,9 @@ pub fn resolve_deletion_accept_theirs(repo: &Repository, path: &str) -> Result<(
     // Remove all stage entries (0/1/2/3) from the index then delete from disk.
     let mut index = repo.index()?;
     let p = std::path::Path::new(path);
-    for stage in 0i32..=3 { let _ = index.remove(p, stage); }
+    for stage in 0i32..=3 {
+        let _ = index.remove(p, stage);
+    }
     index.write()?;
     let _ = std::fs::remove_file(workdir.join(path));
     Ok(())
@@ -309,7 +315,8 @@ pub fn resolve_deletion_keep_ours(repo: &Repository, path: &str) -> Result<()> {
 pub fn reset_conflict_file(repo: &Repository, path: &str) -> Result<()> {
     if !crate::git::git_available() {
         return Err(crate::error::AppError::Other(
-            "La réinitialisation des marqueurs de conflit nécessite git installé sur ce système.".into(),
+            "La réinitialisation des marqueurs de conflit nécessite git installé sur ce système."
+                .into(),
         ));
     }
     let workdir = repo
@@ -340,7 +347,8 @@ pub fn reset_conflict_file(repo: &Repository, path: &str) -> Result<()> {
 pub fn reset_all_conflict_files(repo: &Repository) -> Result<()> {
     if !crate::git::git_available() {
         return Err(crate::error::AppError::Other(
-            "La réinitialisation des marqueurs de conflit nécessite git installé sur ce système.".into(),
+            "La réinitialisation des marqueurs de conflit nécessite git installé sur ce système."
+                .into(),
         ));
     }
     let workdir = repo
@@ -388,7 +396,9 @@ pub fn resolve_deletion_accept(repo: &Repository, path: &str) -> Result<()> {
     // Remove all stage entries from the index only (keep file on disk).
     let mut index = repo.index()?;
     let p = std::path::Path::new(path);
-    for stage in 0i32..=3 { let _ = index.remove(p, stage); }
+    for stage in 0i32..=3 {
+        let _ = index.remove(p, stage);
+    }
     index.write()?;
     Ok(())
 }
@@ -401,7 +411,8 @@ pub fn resolve_deletion_accept(repo: &Repository, path: &str) -> Result<()> {
 pub fn reset_staged_conflict_file(repo: &Repository, path: &str) -> Result<()> {
     if !crate::git::git_available() {
         return Err(crate::error::AppError::Other(
-            "La réinitialisation d'un conflit déjà résolu nécessite git installé sur ce système.".into(),
+            "La réinitialisation d'un conflit déjà résolu nécessite git installé sur ce système."
+                .into(),
         ));
     }
     use std::io::Write;
@@ -513,19 +524,20 @@ pub fn resolve_deletion_restore(repo: &Repository, path: &str) -> Result<()> {
 
     // Read MERGE_HEAD OID from the .git/MERGE_HEAD file.
     let merge_head_file = repo.path().join("MERGE_HEAD");
-    let merge_head_str = std::fs::read_to_string(&merge_head_file)
-        .map_err(|_| crate::error::AppError::Other("Aucun merge en cours (MERGE_HEAD absent)".into()))?;
-    let merge_head_oid = merge_head_str.trim()
+    let merge_head_str = std::fs::read_to_string(&merge_head_file).map_err(|_| {
+        crate::error::AppError::Other("Aucun merge en cours (MERGE_HEAD absent)".into())
+    })?;
+    let merge_head_oid = merge_head_str
+        .trim()
         .parse::<git2::Oid>()
         .map_err(|_| crate::error::AppError::Other("OID MERGE_HEAD invalide".into()))?;
 
     // Get the file's blob from the MERGE_HEAD tree.
     let merge_commit = repo.find_commit(merge_head_oid)?;
     let tree = merge_commit.tree()?;
-    let entry = tree.get_path(std::path::Path::new(path))
-        .map_err(|_| crate::error::AppError::Other(
-            format!("Fichier « {path} » introuvable dans MERGE_HEAD"),
-        ))?;
+    let entry = tree.get_path(std::path::Path::new(path)).map_err(|_| {
+        crate::error::AppError::Other(format!("Fichier « {path} » introuvable dans MERGE_HEAD"))
+    })?;
     let blob = repo.find_blob(entry.id())?;
 
     // Write to disk and stage.
@@ -559,7 +571,8 @@ mod tests {
             let tree_oid = index.write_tree().unwrap();
             let tree = repo.find_tree(tree_oid).unwrap();
             let sig = repo.signature().unwrap();
-            repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[]).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[])
+                .unwrap();
         }
         (tmp, repo)
     }
@@ -568,7 +581,10 @@ mod tests {
     fn clean_repo_has_empty_status() {
         let (_tmp, repo) = setup_repo_with_commit();
         let entries = get_status(&repo).unwrap();
-        assert!(entries.is_empty(), "clean repo should have no status entries");
+        assert!(
+            entries.is_empty(),
+            "clean repo should have no status entries"
+        );
     }
 
     #[test]
@@ -625,7 +641,10 @@ mod tests {
         std::fs::write(workdir.join("init.txt"), "changed").unwrap();
         discard_changes(&repo, "init.txt").unwrap();
         let content = std::fs::read_to_string(workdir.join("init.txt")).unwrap();
-        assert_eq!(content, "init", "file should be restored to committed content");
+        assert_eq!(
+            content, "init",
+            "file should be restored to committed content"
+        );
         let entries = get_status(&repo).unwrap();
         assert!(entries.is_empty(), "status should be clean after discard");
     }

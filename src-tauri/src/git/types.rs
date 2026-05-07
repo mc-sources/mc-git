@@ -103,10 +103,7 @@ pub struct LogFilters {
 
 impl LogFilters {
     pub fn is_empty(&self) -> bool {
-        self.search.is_none()
-            && self.since.is_none()
-            && self.until.is_none()
-            && self.path.is_none()
+        self.search.is_none() && self.since.is_none() && self.until.is_none() && self.path.is_none()
     }
 }
 

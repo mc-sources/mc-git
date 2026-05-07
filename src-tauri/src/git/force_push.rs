@@ -57,12 +57,10 @@ mod tests {
         let tree_oid = index.write_tree().unwrap();
         let tree = repo.find_tree(tree_oid).unwrap();
         let sig = repo.signature().unwrap();
-        repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[]).unwrap();
+        repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[])
+            .unwrap();
 
         let err = push_force_with_lease(tmp.path(), "nonexistent", "main");
-        assert!(
-            err.is_err(),
-            "push to nonexistent remote should fail"
-        );
+        assert!(err.is_err(), "push to nonexistent remote should fail");
     }
 }

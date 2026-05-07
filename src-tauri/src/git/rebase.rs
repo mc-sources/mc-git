@@ -13,7 +13,8 @@ pub fn rebase_branch(repo: &Repository, onto_branch: &str) -> Result<RebaseStatu
     }
 
     // Resolve onto branch to an annotated commit
-    let onto_ref = repo.find_reference(&format!("refs/heads/{onto_branch}"))
+    let onto_ref = repo
+        .find_reference(&format!("refs/heads/{onto_branch}"))
         .or_else(|_| repo.find_reference(onto_branch))
         .map_err(|_| AppError::Other(format!("Branche introuvable : {onto_branch}")))?;
     let onto_oid = onto_ref
@@ -230,7 +231,9 @@ pub fn apply_interactive_rebase(
     let mut groups: Vec<Group> = Vec::new();
     for step in &plan {
         match step.action.as_str() {
-            "pick" | "reword" => groups.push(Group { commits: vec![step] }),
+            "pick" | "reword" => groups.push(Group {
+                commits: vec![step],
+            }),
             "squash" | "fixup" => {
                 if let Some(g) = groups.last_mut() {
                     g.commits.push(step);

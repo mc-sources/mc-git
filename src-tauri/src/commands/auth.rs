@@ -14,7 +14,12 @@ pub struct SshKeyInfo {
 }
 
 #[tauri::command]
-pub fn save_credentials(host: String, username: String, token: String, app: AppHandle) -> Result<()> {
+pub fn save_credentials(
+    host: String,
+    username: String,
+    token: String,
+    app: AppHandle,
+) -> Result<()> {
     let result = credential_store::set(&host, Credential { username, token })
         .map_err(|e| AppError::Other(e.to_string()));
     log_result(&app, &format!("save_credentials({host})"), result)
@@ -22,8 +27,7 @@ pub fn save_credentials(host: String, username: String, token: String, app: AppH
 
 #[tauri::command]
 pub fn clear_credentials(host: String, app: AppHandle) -> Result<()> {
-    let result = credential_store::remove(&host)
-        .map_err(|e| AppError::Other(e.to_string()));
+    let result = credential_store::remove(&host).map_err(|e| AppError::Other(e.to_string()));
     log_result(&app, &format!("clear_credentials({host})"), result)
 }
 
@@ -35,8 +39,8 @@ pub fn list_saved_hosts(app: AppHandle) -> Result<Vec<String>> {
 
 #[tauri::command]
 pub fn trust_ssh_host(host: String, fingerprint: String, app: AppHandle) -> Result<()> {
-    let result = trusted_hosts::add(&host, &fingerprint)
-        .map_err(|e| AppError::Other(e.to_string()));
+    let result =
+        trusted_hosts::add(&host, &fingerprint).map_err(|e| AppError::Other(e.to_string()));
     log_result(&app, &format!("trust_ssh_host({host})"), result)
 }
 
@@ -47,8 +51,8 @@ pub fn list_ssh_keys(app: AppHandle) -> Result<Vec<SshKeyInfo>> {
 }
 
 fn detect_ssh_keys() -> Result<Vec<SshKeyInfo>> {
-    let home = dirs::home_dir()
-        .ok_or_else(|| AppError::Other("Répertoire home introuvable".into()))?;
+    let home =
+        dirs::home_dir().ok_or_else(|| AppError::Other("Répertoire home introuvable".into()))?;
     let ssh_dir = home.join(".ssh");
 
     let read_dir = match std::fs::read_dir(&ssh_dir) {
@@ -75,12 +79,12 @@ fn detect_ssh_keys() -> Result<Vec<SshKeyInfo>> {
         };
         let algo_tag = pub_content.split_whitespace().next().unwrap_or("");
         let algorithm = match algo_tag {
-            "ssh-ed25519"                                             => "Ed25519",
-            "ssh-rsa"                                                 => "RSA",
-            t if t.starts_with("ecdsa-sha2-")                        => "ECDSA",
-            "ssh-dss"                                                 => "DSA",
-            other if !other.is_empty()                               => other,
-            _                                                         => "Unknown",
+            "ssh-ed25519" => "Ed25519",
+            "ssh-rsa" => "RSA",
+            t if t.starts_with("ecdsa-sha2-") => "ECDSA",
+            "ssh-dss" => "DSA",
+            other if !other.is_empty() => other,
+            _ => "Unknown",
         };
         let name = private_path
             .file_name()
@@ -97,8 +101,14 @@ fn detect_ssh_keys() -> Result<Vec<SshKeyInfo>> {
     // Stable sort: standard names first, then alphabetical
     let order = ["id_ed25519", "id_rsa", "id_ecdsa", "id_dsa"];
     keys.sort_by(|a, b| {
-        let ai = order.iter().position(|&n| n == a.name).unwrap_or(usize::MAX);
-        let bi = order.iter().position(|&n| n == b.name).unwrap_or(usize::MAX);
+        let ai = order
+            .iter()
+            .position(|&n| n == a.name)
+            .unwrap_or(usize::MAX);
+        let bi = order
+            .iter()
+            .position(|&n| n == b.name)
+            .unwrap_or(usize::MAX);
         ai.cmp(&bi).then(a.name.cmp(&b.name))
     });
 

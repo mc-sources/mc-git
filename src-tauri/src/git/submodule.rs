@@ -27,7 +27,13 @@ pub fn list_submodules(repo: &Repository) -> Result<Vec<SubmoduleInfo>> {
             Err(_) => SubmoduleStatus::Uninitialized,
         };
 
-        result.push(SubmoduleInfo { name, path, url, head_oid, status });
+        result.push(SubmoduleInfo {
+            name,
+            path,
+            url,
+            head_oid,
+            status,
+        });
     }
 
     Ok(result)

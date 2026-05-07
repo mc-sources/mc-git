@@ -28,7 +28,10 @@ fn load_from_disk() -> Option<HashMap<String, Credential>> {
 
 fn save_to_disk(map: &HashMap<String, Credential>) -> std::io::Result<()> {
     let path = store_path().ok_or_else(|| {
-        std::io::Error::new(std::io::ErrorKind::NotFound, "Répertoire de données introuvable")
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Répertoire de données introuvable",
+        )
     })?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -44,18 +47,18 @@ pub fn get(host: &str) -> Option<Credential> {
 
 /// Saves a credential for the given host, persisting to disk.
 pub fn set(host: &str, cred: Credential) -> std::io::Result<()> {
-    let mut cache = get_cache().lock().map_err(|_| {
-        std::io::Error::other("Verrou du cache de credentials corrompu")
-    })?;
+    let mut cache = get_cache()
+        .lock()
+        .map_err(|_| std::io::Error::other("Verrou du cache de credentials corrompu"))?;
     cache.insert(host.to_string(), cred);
     save_to_disk(&cache)
 }
 
 /// Removes the credential for the given host and persists to disk.
 pub fn remove(host: &str) -> std::io::Result<()> {
-    let mut cache = get_cache().lock().map_err(|_| {
-        std::io::Error::other("Verrou du cache de credentials corrompu")
-    })?;
+    let mut cache = get_cache()
+        .lock()
+        .map_err(|_| std::io::Error::other("Verrou du cache de credentials corrompu"))?;
     cache.remove(host);
     save_to_disk(&cache)
 }

@@ -46,7 +46,12 @@ pub fn update_all_submodules(app: AppHandle, state: State<AppState>) -> Result<(
 }
 
 #[tauri::command]
-pub fn add_submodule(url: String, path: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn add_submodule(
+    url: String,
+    path: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;

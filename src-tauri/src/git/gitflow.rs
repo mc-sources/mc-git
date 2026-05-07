@@ -10,11 +10,21 @@ pub fn read_gitflow_config(repo: &Repository) -> Option<GitFlowConfig> {
     let cfg = repo.config().ok()?;
     let master = cfg.get_string("gitflow.branch.master").ok()?;
     let develop = cfg.get_string("gitflow.branch.develop").ok()?;
-    let feature_prefix = cfg.get_string("gitflow.prefix.feature").unwrap_or_else(|_| "feature/".into());
-    let release_prefix = cfg.get_string("gitflow.prefix.release").unwrap_or_else(|_| "release/".into());
-    let hotfix_prefix = cfg.get_string("gitflow.prefix.hotfix").unwrap_or_else(|_| "hotfix/".into());
-    let support_prefix = cfg.get_string("gitflow.prefix.support").unwrap_or_else(|_| "support/".into());
-    let version_tag_prefix = cfg.get_string("gitflow.prefix.versiontag").unwrap_or_default();
+    let feature_prefix = cfg
+        .get_string("gitflow.prefix.feature")
+        .unwrap_or_else(|_| "feature/".into());
+    let release_prefix = cfg
+        .get_string("gitflow.prefix.release")
+        .unwrap_or_else(|_| "release/".into());
+    let hotfix_prefix = cfg
+        .get_string("gitflow.prefix.hotfix")
+        .unwrap_or_else(|_| "hotfix/".into());
+    let support_prefix = cfg
+        .get_string("gitflow.prefix.support")
+        .unwrap_or_else(|_| "support/".into());
+    let version_tag_prefix = cfg
+        .get_string("gitflow.prefix.versiontag")
+        .unwrap_or_default();
 
     Some(GitFlowConfig {
         master,
@@ -38,7 +48,10 @@ pub fn init_gitflow(repo: &Repository, config: &GitFlowConfig) -> Result<()> {
     cfg.set_str("gitflow.prefix.versiontag", &config.version_tag_prefix)?;
 
     // Create develop branch from master (or HEAD) if it doesn't exist yet
-    if repo.find_branch(&config.develop, BranchType::Local).is_err() {
+    if repo
+        .find_branch(&config.develop, BranchType::Local)
+        .is_err()
+    {
         let base = if repo.find_branch(&config.master, BranchType::Local).is_ok() {
             config.master.clone()
         } else {
@@ -50,7 +63,12 @@ pub fn init_gitflow(repo: &Repository, config: &GitFlowConfig) -> Result<()> {
     Ok(())
 }
 
-pub fn start_branch(repo: &Repository, kind: &str, name: &str, config: &GitFlowConfig) -> Result<BranchInfo> {
+pub fn start_branch(
+    repo: &Repository,
+    kind: &str,
+    name: &str,
+    config: &GitFlowConfig,
+) -> Result<BranchInfo> {
     let prefix = kind_prefix(kind, config)?;
     let branch_name = format!("{prefix}{name}");
 
@@ -73,7 +91,12 @@ pub fn start_branch(repo: &Repository, kind: &str, name: &str, config: &GitFlowC
     Ok(info)
 }
 
-pub fn finish_branch(repo: &Repository, kind: &str, name: &str, config: &GitFlowConfig) -> Result<()> {
+pub fn finish_branch(
+    repo: &Repository,
+    kind: &str,
+    name: &str,
+    config: &GitFlowConfig,
+) -> Result<()> {
     let prefix = kind_prefix(kind, config)?;
     let branch_name = format!("{prefix}{name}");
 

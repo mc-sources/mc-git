@@ -16,7 +16,11 @@ pub fn get_git_config(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.get_git_config(&key, global)
     };
-    log_result(&app, &format!("get_git_config({key}, global={global})"), result)
+    log_result(
+        &app,
+        &format!("get_git_config({key}, global={global})"),
+        result,
+    )
 }
 
 #[tauri::command]
@@ -32,5 +36,9 @@ pub fn set_git_config(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.set_git_config(&key, &value, global)
     };
-    log_result(&app, &format!("set_git_config({key}, global={global})"), result)
+    log_result(
+        &app,
+        &format!("set_git_config({key}, global={global})"),
+        result,
+    )
 }

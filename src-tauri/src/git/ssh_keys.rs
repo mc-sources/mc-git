@@ -26,7 +26,11 @@ pub fn discover() -> Vec<(PathBuf, PathBuf)> {
                 return None;
             }
             let private = pub_path.with_extension("");
-            if private.exists() { Some((pub_path, private)) } else { None }
+            if private.exists() {
+                Some((pub_path, private))
+            } else {
+                None
+            }
         })
         .collect();
 

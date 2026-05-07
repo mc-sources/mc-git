@@ -65,7 +65,8 @@ pub fn get_log(
     match branch {
         Some(b) => {
             let reference = repo.find_reference(&format!("refs/heads/{b}"))?;
-            let oid = reference.target()
+            let oid = reference
+                .target()
                 .ok_or_else(|| AppError::Other(format!("Branch '{b}' has no direct target")))?;
             revwalk.push(oid)?;
         }
@@ -91,7 +92,11 @@ pub fn get_log(
     let f = filters.unwrap();
     // Path filter requires per-commit diff (expensive); other filters are cheap text/date checks.
     // Both cases are capped to avoid scanning arbitrarily large histories.
-    let scan_cap = if f.path.is_some() { MAX_PATH_SCAN } else { 20_000 };
+    let scan_cap = if f.path.is_some() {
+        MAX_PATH_SCAN
+    } else {
+        20_000
+    };
 
     let commits: Vec<CommitSummary> = revwalk
         .take(scan_cap)
@@ -110,7 +115,11 @@ pub fn get_log(
 /// When `show_all` is false (default): pushes HEAD only — equivalent to `git log`.
 /// When `show_all` is true: pushes all local branches + all remote-tracking refs
 /// — equivalent to `git log --all --graph`.
-pub fn get_graph_log(repo: &Repository, limit: usize, show_all: bool) -> Result<Vec<CommitSummary>> {
+pub fn get_graph_log(
+    repo: &Repository,
+    limit: usize,
+    show_all: bool,
+) -> Result<Vec<CommitSummary>> {
     let mut revwalk = repo.revwalk()?;
     revwalk.set_sorting(Sort::TOPOLOGICAL | Sort::TIME)?;
 
@@ -145,9 +154,9 @@ pub fn reset_to_commit(repo: &Repository, oid_str: &str, mode: &str) -> Result<(
     let oid = git2::Oid::from_str(oid_str)?;
     let obj = repo.find_object(oid, None)?;
     let reset_type = match mode {
-        "soft"  => ResetType::Soft,
-        "hard"  => ResetType::Hard,
-        _       => ResetType::Mixed,
+        "soft" => ResetType::Soft,
+        "hard" => ResetType::Hard,
+        _ => ResetType::Mixed,
     };
     repo.reset(&obj, reset_type, None)?;
     Ok(())
@@ -198,8 +207,14 @@ pub fn get_commit_detail(repo: &Repository, oid_str: &str) -> Result<CommitDetai
     diff.foreach(
         &mut |delta, _progress| {
             use git2::Delta;
-            let new_path = delta.new_file().path().map(|p| p.to_string_lossy().to_string());
-            let old_path = delta.old_file().path().map(|p| p.to_string_lossy().to_string());
+            let new_path = delta
+                .new_file()
+                .path()
+                .map(|p| p.to_string_lossy().to_string());
+            let old_path = delta
+                .old_file()
+                .path()
+                .map(|p| p.to_string_lossy().to_string());
             let is_binary = delta.new_file().is_binary() || delta.old_file().is_binary();
             let status = match delta.status() {
                 Delta::Added => "added",
@@ -207,18 +222,29 @@ pub fn get_commit_detail(repo: &Repository, oid_str: &str) -> Result<CommitDetai
                 Delta::Renamed => "renamed",
                 Delta::Copied => "copied",
                 _ => "modified",
-            }.to_string();
+            }
+            .to_string();
             let clean_old = old_path.filter(|p| {
-                matches!(delta.status(), Delta::Deleted | Delta::Renamed | Delta::Copied)
-                    || new_path.as_deref() != Some(p)
+                matches!(
+                    delta.status(),
+                    Delta::Deleted | Delta::Renamed | Delta::Copied
+                ) || new_path.as_deref() != Some(p)
             });
-            changed_files.push(ChangedFileSummary { old_path: clean_old, new_path, is_binary, status });
+            changed_files.push(ChangedFileSummary {
+                old_path: clean_old,
+                new_path,
+                is_binary,
+                status,
+            });
             true
         },
-        None, None, None,
+        None,
+        None,
+        None,
     )?;
 
-    let is_signed = commit.raw_header()
+    let is_signed = commit
+        .raw_header()
         .map(|h| h.contains("gpgsig"))
         .unwrap_or(false);
 

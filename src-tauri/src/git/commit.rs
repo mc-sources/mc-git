@@ -34,10 +34,10 @@ pub fn create_commit(repo: &Repository, message: &str) -> Result<CommitSummary> 
 
     let sig = repo.signature()?;
 
-    let head_commit = repo.head().ok().and_then(|h| {
-        h.target()
-            .and_then(|oid| repo.find_commit(oid).ok())
-    });
+    let head_commit = repo
+        .head()
+        .ok()
+        .and_then(|h| h.target().and_then(|oid| repo.find_commit(oid).ok()));
 
     // Include MERGE_HEAD as second parent for merge commits so that:
     //   (a) a proper two-parent merge commit is created, and
@@ -105,7 +105,9 @@ pub fn create_commit(repo: &Repository, message: &str) -> Result<CommitSummary> 
 
 pub fn amend_commit(repo: &Repository, message: &str) -> Result<CommitSummary> {
     let head = repo.head()?;
-    let oid = head.target().ok_or_else(|| AppError::Other("HEAD has no target".into()))?;
+    let oid = head
+        .target()
+        .ok_or_else(|| AppError::Other("HEAD has no target".into()))?;
     let head_commit = repo.find_commit(oid)?;
 
     let mut index = repo.index()?;
@@ -128,7 +130,9 @@ pub fn amend_commit(repo: &Repository, message: &str) -> Result<CommitSummary> {
 
 pub fn get_head_commit(repo: &Repository) -> Result<CommitSummary> {
     let head = repo.head()?;
-    let oid = head.target().ok_or_else(|| AppError::Other("HEAD has no target".into()))?;
+    let oid = head
+        .target()
+        .ok_or_else(|| AppError::Other("HEAD has no target".into()))?;
     let commit = repo.find_commit(oid)?;
     Ok(commit_to_summary(&commit))
 }
