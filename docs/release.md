@@ -162,7 +162,30 @@ git push origin main dev vX.Y.Z
 
 ### [5] Build des artefacts de production
 
-Une fois la release sur `main` et taguée :
+Le build officiel est **automatisé** par le workflow `.github/workflows/release.yml`, déclenché sur push d'un tag `v*.*.*` (ou via `workflow_dispatch` manuel). Le workflow compile l'app sur Ubuntu, macOS et Windows en parallèle, crée la GitHub Release sur le tag courant et y attache l'ensemble des bundles.
+
+```
+push origin vX.Y.Z
+  └── release.yml déclenché
+        ├── extract-changelog (Ubuntu) ── parse [X.Y.Z] depuis CHANGELOG.md → release body
+        └── build (matrix Ubuntu / macOS / Windows)
+              └── tauri-apps/tauri-action@v0
+                    └── npm ci + npm run tauri build + upload artefacts à la GitHub Release
+```
+
+Bundles produits et attachés à la release :
+
+```
+Linux   → mcgit_X.Y.Z_amd64.deb, mcgit_X.Y.Z_amd64.AppImage
+macOS   → mcgit_X.Y.Z_aarch64.dmg                              (runner Apple Silicon par défaut)
+Windows → mcgit_X.Y.Z_x64_en-US.msi, mcgit_X.Y.Z_x64-setup.exe
+```
+
+**Signature de code** : non couverte sur le cycle `0.x`. Sur macOS, l'utilisateur verra « developer cannot be verified » au premier lancement (clic droit → Ouvrir contourne) ; sur Windows, SmartScreen affichera un avertissement (« Plus d'infos » → « Exécuter quand même »). Linux n'est pas impacté. Notarisation et code signing seront couverts par une US ultérieure avant le passage à `1.0.0`.
+
+#### Build manuel (fallback)
+
+Si le workflow CI est indisponible ou pour un test local :
 
 ```bash
 git checkout main
@@ -174,13 +197,13 @@ Les binaires sont générés dans `src-tauri/target/release/bundle/` :
 ```
 deb/      → mcgit_X.Y.Z_amd64.deb         (Linux)
 appimage/ → mcgit_X.Y.Z_amd64.AppImage    (Linux)
-dmg/      → mcgit_X.Y.Z_x64.dmg           (macOS)
+dmg/      → mcgit_X.Y.Z_aarch64.dmg       (macOS, Apple Silicon)
 macos/    → Mc-Git.app                    (macOS)
 msi/      → mcgit_X.Y.Z_x64_en-US.msi     (Windows)
 nsis/     → mcgit_X.Y.Z_x64-setup.exe     (Windows)
 ```
 
-> **Cross-platform** : Tauri ne supporte pas la compilation croisée nativement. Pour générer les binaires de toutes les plateformes, utiliser des runners CI dédiés ou compiler manuellement sur chaque plateforme.
+> **Cross-platform** : Tauri ne supporte pas la compilation croisée nativement. Le workflow CI couvre les 3 OS via runners GitHub Actions. En manuel, il faut compiler sur chaque plateforme.
 
 ---
 
