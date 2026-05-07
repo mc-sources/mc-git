@@ -64,7 +64,8 @@ pub fn fetch(
     fetch_opts.remote_callbacks(callbacks);
     fetch_opts.download_tags(git2::AutotagOption::Unspecified);
 
-    remote.fetch(&[] as &[&str], Some(&mut fetch_opts), None)
+    remote
+        .fetch(&[] as &[&str], Some(&mut fetch_opts), None)
         .map_err(|e| remap_cert_error(e, &cert_err))?;
     Ok(())
 }
@@ -98,7 +99,8 @@ pub fn push(
     push_opts.remote_callbacks(callbacks);
 
     let refspec = format!("refs/heads/{branch}:refs/heads/{branch}");
-    remote.push(&[refspec.as_str()], Some(&mut push_opts))
+    remote
+        .push(&[refspec.as_str()], Some(&mut push_opts))
         .map_err(|e| remap_cert_error(e, &cert_err))?;
     Ok(())
 }
@@ -114,9 +116,9 @@ pub fn pull(
 
     // 2. Find the remote tracking branch
     let remote_ref = format!("refs/remotes/{remote_name}/{branch}");
-    let fetch_head = repo.find_reference(&remote_ref).or_else(|_| {
-        repo.find_reference("FETCH_HEAD")
-    })?;
+    let fetch_head = repo
+        .find_reference(&remote_ref)
+        .or_else(|_| repo.find_reference("FETCH_HEAD"))?;
 
     let fetch_commit = repo.reference_to_annotated_commit(&fetch_head)?;
 
@@ -153,7 +155,11 @@ pub fn pull(
         let mut checkout_opts = git2::build::CheckoutBuilder::new();
         checkout_opts.force();
 
-        repo.merge(&[&fetch_commit], Some(&mut merge_opts), Some(&mut checkout_opts))?;
+        repo.merge(
+            &[&fetch_commit],
+            Some(&mut merge_opts),
+            Some(&mut checkout_opts),
+        )?;
 
         // Check for conflicts — leave MERGE_HEAD intact so the repo state stays "merge"
         let index = repo.index()?;
@@ -181,7 +187,9 @@ pub fn pull(
         return Ok(());
     }
 
-    Err(AppError::Other("Impossible de fusionner: état du dépôt inattendu".into()))
+    Err(AppError::Other(
+        "Impossible de fusionner: état du dépôt inattendu".into(),
+    ))
 }
 
 pub fn fetch_all(repo: &Repository) -> Vec<RemoteFetchResult> {
@@ -195,11 +203,19 @@ pub fn fetch_all(repo: &Repository) -> Vec<RemoteFetchResult> {
             }]
         }
     };
-    let names: Vec<String> = remote_names.iter().flatten().map(|s| s.to_string()).collect();
+    let names: Vec<String> = remote_names
+        .iter()
+        .flatten()
+        .map(|s| s.to_string())
+        .collect();
     let mut results = Vec::new();
     for name in names {
         match fetch(repo, &name, None) {
-            Ok(()) => results.push(RemoteFetchResult { remote: name, ok: true, error: None }),
+            Ok(()) => results.push(RemoteFetchResult {
+                remote: name,
+                ok: true,
+                error: None,
+            }),
             Err(e) => results.push(RemoteFetchResult {
                 remote: name,
                 ok: false,
@@ -210,13 +226,11 @@ pub fn fetch_all(repo: &Repository) -> Vec<RemoteFetchResult> {
     results
 }
 
-pub fn prune_remote(
-    repo: &Repository,
-    remote_name: &str,
-) -> Result<()> {
+pub fn prune_remote(repo: &Repository, remote_name: &str) -> Result<()> {
     let mut remote = repo.find_remote(remote_name)?;
     let (cbs, cert_err) = build_callbacks();
-    remote.connect_auth(git2::Direction::Fetch, Some(cbs), None)
+    remote
+        .connect_auth(git2::Direction::Fetch, Some(cbs), None)
         .map_err(|e| remap_cert_error(e, &cert_err))?;
     let (cbs2, _) = build_callbacks();
     remote.prune(Some(cbs2))?;

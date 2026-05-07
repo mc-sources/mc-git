@@ -1,6 +1,6 @@
 mod common;
-use common::TestRepo;
 use common::skip_if_no_git;
+use common::TestRepo;
 
 #[test]
 fn cli_commit_and_log() {

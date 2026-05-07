@@ -6,7 +6,11 @@ use crate::logger::log_result;
 use crate::state::AppState;
 
 #[tauri::command]
-pub fn rebase_branch(onto_branch: String, app: AppHandle, state: State<AppState>) -> Result<RebaseStatus> {
+pub fn rebase_branch(
+    onto_branch: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<RebaseStatus> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
@@ -46,7 +50,11 @@ pub fn get_interactive_rebase_commits(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.get_interactive_rebase_commits(&upstream_oid)
     };
-    log_result(&app, &format!("get_interactive_rebase_commits({upstream_oid})"), result)
+    log_result(
+        &app,
+        &format!("get_interactive_rebase_commits({upstream_oid})"),
+        result,
+    )
 }
 
 #[tauri::command]
@@ -61,5 +69,9 @@ pub fn apply_interactive_rebase(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.apply_interactive_rebase(&upstream_oid, steps)
     };
-    log_result(&app, &format!("apply_interactive_rebase({upstream_oid})"), result)
+    log_result(
+        &app,
+        &format!("apply_interactive_rebase({upstream_oid})"),
+        result,
+    )
 }

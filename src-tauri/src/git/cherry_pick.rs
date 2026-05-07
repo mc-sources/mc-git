@@ -38,14 +38,20 @@ pub fn cherry_pick(repo: &Repository, oid_str: &str) -> Result<CherryPickStatus>
 
     if index.has_conflicts() {
         let conflict_count = index.conflicts()?.count();
-        return Ok(CherryPickStatus { has_conflicts: true, conflict_count });
+        return Ok(CherryPickStatus {
+            has_conflicts: true,
+            conflict_count,
+        });
     }
 
     // No conflicts — auto-commit then clean up state
     create_commit(repo, &message)?;
     repo.cleanup_state()?;
 
-    Ok(CherryPickStatus { has_conflicts: false, conflict_count: 0 })
+    Ok(CherryPickStatus {
+        has_conflicts: false,
+        conflict_count: 0,
+    })
 }
 
 pub fn continue_cherry_pick(repo: &Repository) -> Result<CommitSummary> {

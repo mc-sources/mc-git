@@ -8,7 +8,11 @@ pub mod logger;
 mod migrations;
 mod state;
 
-use commands::{auth, branch, cherry_pick, commit, config, diff, external_diff, file_editor, gitflow, gpg, history, legal, merge, open_in_editor, rebase, remote, report, repository, stash, submodule, tag, status, terminal};
+use commands::{
+    auth, branch, cherry_pick, commit, config, diff, external_diff, file_editor, gitflow, gpg,
+    history, legal, merge, open_in_editor, rebase, remote, report, repository, stash, status,
+    submodule, tag, terminal,
+};
 use state::AppState;
 
 fn run_legacy_migrations() {

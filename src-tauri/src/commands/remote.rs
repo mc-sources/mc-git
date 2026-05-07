@@ -17,7 +17,12 @@ pub fn list_remotes(app: AppHandle, state: State<AppState>) -> Result<Vec<Remote
 }
 
 #[tauri::command]
-pub fn add_remote(name: String, url: String, app: AppHandle, state: State<AppState>) -> Result<RemoteInfo> {
+pub fn add_remote(
+    name: String,
+    url: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<RemoteInfo> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
@@ -46,7 +51,11 @@ pub fn fetch_remote(remote_name: String, app: AppHandle, state: State<AppState>)
         repo.fetch_remote_with_progress(
             &remote_name,
             Box::new(move |current, total| {
-                let pct = if total > 0 { Some(current * 100 / total) } else { None };
+                let pct = if total > 0 {
+                    Some(current * 100 / total)
+                } else {
+                    None
+                };
                 emit_progress(&app2, "fetch", "Réception des objets…", pct);
             }),
         )
@@ -56,7 +65,12 @@ pub fn fetch_remote(remote_name: String, app: AppHandle, state: State<AppState>)
 }
 
 #[tauri::command]
-pub fn push_remote(remote_name: String, branch: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn push_remote(
+    remote_name: String,
+    branch: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     emit_progress(&app, "push", "Envoi des objets…", None);
     let app2 = app.clone();
     let result: Result<()> = (|| {
@@ -66,7 +80,11 @@ pub fn push_remote(remote_name: String, branch: String, app: AppHandle, state: S
             &remote_name,
             &branch,
             Box::new(move |current, total| {
-                let pct = if total > 0 { Some(current * 100 / total) } else { None };
+                let pct = if total > 0 {
+                    Some(current * 100 / total)
+                } else {
+                    None
+                };
                 emit_progress(&app2, "push", "Envoi des objets…", pct);
             }),
         )
@@ -76,7 +94,12 @@ pub fn push_remote(remote_name: String, branch: String, app: AppHandle, state: S
 }
 
 #[tauri::command]
-pub fn push_force_with_lease(remote_name: String, branch: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn push_force_with_lease(
+    remote_name: String,
+    branch: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     emit_progress(&app, "push", "Force push with lease…", None);
     let result: Result<()> = (|| {
         let guard = state.lock_repo()?;
@@ -84,11 +107,20 @@ pub fn push_force_with_lease(remote_name: String, branch: String, app: AppHandle
         repo.push_force_with_lease(&remote_name, &branch)
     })();
     emit_progress_done(&app, "push");
-    log_result(&app, &format!("push_force_with_lease({remote_name}/{branch})"), result)
+    log_result(
+        &app,
+        &format!("push_force_with_lease({remote_name}/{branch})"),
+        result,
+    )
 }
 
 #[tauri::command]
-pub fn pull_remote(remote_name: String, branch: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn pull_remote(
+    remote_name: String,
+    branch: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     emit_progress(&app, "pull", "Connexion au remote…", None);
     let app2 = app.clone();
     let result: Result<()> = (|| {
@@ -98,7 +130,11 @@ pub fn pull_remote(remote_name: String, branch: String, app: AppHandle, state: S
             &remote_name,
             &branch,
             Box::new(move |current, total| {
-                let pct = if total > 0 { Some(current * 100 / total) } else { None };
+                let pct = if total > 0 {
+                    Some(current * 100 / total)
+                } else {
+                    None
+                };
                 emit_progress(&app2, "pull", "Réception des objets…", pct);
             }),
         )
@@ -120,11 +156,11 @@ pub fn fetch_all_remotes(app: AppHandle, state: State<AppState>) -> Result<Vec<R
 }
 
 #[tauri::command]
-pub fn prune_remote(remote_name: String, app: AppHandle, state: State<AppState>) -> Result<()> {                                                                                              
-    let result = {                                                                                                                                                                            
-        let guard = state.lock_repo()?;                                                                                                                                                       
-        let repo = guard.as_ref().ok_or(AppError::NoRepository)?;                                                                                                                             
-        repo.prune_remote(&remote_name)                                                                                                                                                       
+pub fn prune_remote(remote_name: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+    let result = {
+        let guard = state.lock_repo()?;
+        let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
+        repo.prune_remote(&remote_name)
     };
-    log_result(&app, &format!("prune_remote({remote_name})"), result)                                                                                                                         
-}   
+    log_result(&app, &format!("prune_remote({remote_name})"), result)
+}

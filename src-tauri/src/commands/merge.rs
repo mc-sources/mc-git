@@ -17,7 +17,11 @@ pub fn merge_branch(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.merge_branch(&branch_name, no_ff)
     };
-    log_result(&app, &format!("merge_branch({branch_name}, no_ff={no_ff})"), result)
+    log_result(
+        &app,
+        &format!("merge_branch({branch_name}, no_ff={no_ff})"),
+        result,
+    )
 }
 
 #[tauri::command]

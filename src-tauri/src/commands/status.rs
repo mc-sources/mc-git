@@ -64,7 +64,11 @@ pub fn unstage_paths(paths: Vec<String>, app: AppHandle, state: State<AppState>)
         let refs: Vec<&str> = paths.iter().map(|s| s.as_str()).collect();
         repo.unstage_paths(&refs)
     };
-    log_result(&app, &format!("unstage_paths({} files)", paths.len()), result)
+    log_result(
+        &app,
+        &format!("unstage_paths({} files)", paths.len()),
+        result,
+    )
 }
 
 #[tauri::command]
@@ -98,7 +102,11 @@ pub fn resolve_deletion_accept(path: String, app: AppHandle, state: State<AppSta
 }
 
 #[tauri::command]
-pub fn resolve_deletion_restore(path: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn resolve_deletion_restore(
+    path: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
@@ -108,17 +116,29 @@ pub fn resolve_deletion_restore(path: String, app: AppHandle, state: State<AppSt
 }
 
 #[tauri::command]
-pub fn resolve_deletion_accept_theirs(path: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn resolve_deletion_accept_theirs(
+    path: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.resolve_deletion_accept_theirs(&path)
     };
-    log_result(&app, &format!("resolve_deletion_accept_theirs({path})"), result)
+    log_result(
+        &app,
+        &format!("resolve_deletion_accept_theirs({path})"),
+        result,
+    )
 }
 
 #[tauri::command]
-pub fn resolve_deletion_keep_ours(path: String, app: AppHandle, state: State<AppState>) -> Result<()> {
+pub fn resolve_deletion_keep_ours(
+    path: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<()> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;

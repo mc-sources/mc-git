@@ -1,5 +1,5 @@
-use base64::Engine;
 use base64::engine::general_purpose::STANDARD_NO_PAD;
+use base64::Engine;
 
 use crate::git::{known_hosts, trusted_hosts};
 

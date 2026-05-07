@@ -83,7 +83,10 @@ mod tests {
         let migrated = migrate_legacy_dir("tsgit", "mcgit", base).unwrap();
 
         assert!(migrated, "migration devrait avoir eu lieu");
-        assert!(!base.join("tsgit").exists(), "ancien dossier devrait être supprimé");
+        assert!(
+            !base.join("tsgit").exists(),
+            "ancien dossier devrait être supprimé"
+        );
         assert!(base.join("mcgit").join("trusted_ssh_hosts.json").exists());
         assert_eq!(
             std::fs::read_to_string(base.join("mcgit").join("nested").join("deep.txt")).unwrap(),
@@ -101,7 +104,10 @@ mod tests {
         let migrated = migrate_legacy_dir("tsgit", "mcgit", base).unwrap();
 
         assert!(!migrated, "ne doit rien faire si la cible existe déjà");
-        assert!(base.join("tsgit").join("a.txt").exists(), "legacy doit rester intact");
+        assert!(
+            base.join("tsgit").join("a.txt").exists(),
+            "legacy doit rester intact"
+        );
         assert_eq!(
             std::fs::read_to_string(base.join("mcgit").join("b.txt")).unwrap(),
             "already-here"
@@ -132,9 +138,18 @@ mod tests {
 
         copy_dir_recursive(&src, &dst).unwrap();
 
-        assert_eq!(std::fs::read_to_string(dst.join("root.txt")).unwrap(), "root");
-        assert_eq!(std::fs::read_to_string(dst.join("a").join("a.txt")).unwrap(), "a-content");
-        assert_eq!(std::fs::read_to_string(dst.join("a").join("b").join("c.txt")).unwrap(), "deep");
+        assert_eq!(
+            std::fs::read_to_string(dst.join("root.txt")).unwrap(),
+            "root"
+        );
+        assert_eq!(
+            std::fs::read_to_string(dst.join("a").join("a.txt")).unwrap(),
+            "a-content"
+        );
+        assert_eq!(
+            std::fs::read_to_string(dst.join("a").join("b").join("c.txt")).unwrap(),
+            "deep"
+        );
         // Les sources doivent être préservées (la fonction copie, ne déplace pas).
         assert!(src.join("root.txt").exists());
     }
@@ -150,6 +165,9 @@ mod tests {
 
         assert!(first, "1er appel doit migrer");
         assert!(!second, "2e appel doit être no-op");
-        assert_eq!(std::fs::read_to_string(base.join("mcgit").join("a.txt")).unwrap(), "data");
+        assert_eq!(
+            std::fs::read_to_string(base.join("mcgit").join("a.txt")).unwrap(),
+            "data"
+        );
     }
 }

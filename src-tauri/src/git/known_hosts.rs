@@ -1,5 +1,5 @@
-use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 use std::path::PathBuf;
 
 fn known_hosts_path() -> Option<PathBuf> {

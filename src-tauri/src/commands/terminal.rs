@@ -39,19 +39,15 @@ pub fn open_terminal(path: String) -> Result<()> {
                         .arg("--working-directory")
                         .arg(&path),
                 ),
-                "konsole" => spawn_detached(
-                    std::process::Command::new(term)
-                        .arg("--workdir")
-                        .arg(&path),
-                ),
+                "konsole" => {
+                    spawn_detached(std::process::Command::new(term).arg("--workdir").arg(&path))
+                }
                 "xfce4-terminal" | "x-terminal-emulator" => spawn_detached(
                     std::process::Command::new(term)
                         .arg("--working-directory")
                         .arg(&path),
                 ),
-                _ => spawn_detached(
-                    std::process::Command::new(term).current_dir(&path),
-                ),
+                _ => spawn_detached(std::process::Command::new(term).current_dir(&path)),
             };
             if result.is_ok() {
                 return Ok(());
@@ -64,20 +60,14 @@ pub fn open_terminal(path: String) -> Result<()> {
 
     #[cfg(target_os = "macos")]
     {
-        spawn_detached(
-            std::process::Command::new("open").args(["-a", "Terminal", &path]),
-        )
-        .map_err(|e| AppError::Other(format!("Impossible d'ouvrir Terminal : {e}")))?;
+        spawn_detached(std::process::Command::new("open").args(["-a", "Terminal", &path]))
+            .map_err(|e| AppError::Other(format!("Impossible d'ouvrir Terminal : {e}")))?;
         return Ok(());
     }
 
     #[cfg(target_os = "windows")]
     {
-        if spawn_detached(
-            std::process::Command::new("wt.exe").args(["-d", &path]),
-        )
-        .is_ok()
-        {
+        if spawn_detached(std::process::Command::new("wt.exe").args(["-d", &path])).is_ok() {
             return Ok(());
         }
         spawn_detached(

@@ -10,6 +10,24 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.3] — 2026-05-07
+
+### Added
+
+- **CI GitHub Actions** : nouveau workflow `.github/workflows/tests.yml` exécuté sur chaque push et pull request vers `main`/`dev`. Quatre jobs en parallèle :
+  - `frontend-typecheck` (Ubuntu) — `npx tsc --noEmit`
+  - `rust-fmt-clippy` (Ubuntu) — `cargo fmt --check` + `cargo clippy --all-targets -- -D warnings`
+  - `rust-test` (matrix Ubuntu / macOS / Windows) — `cargo test --all-targets`
+  - `rust-coverage` (Ubuntu) — `cargo llvm-cov` avec upload optionnel vers Codecov (best-effort si `CODECOV_TOKEN` configuré)
+- **Badges CI et Coverage** ajoutés au `README.md`.
+
+### Changed
+
+- `cargo fmt` appliqué sur le code Rust existant (alignement automatique du style).
+- Module `tests/common/` : ajout de `#![allow(dead_code, unused_macros, unused_imports)]` pour neutraliser les warnings sur les helpers en attente de scénarios futurs (compatibilité avec `clippy -D warnings`).
+
+---
+
 ## [0.1.2] — 2026-05-06
 
 ### Added

@@ -6,7 +6,8 @@ use crate::error::{AppError, Result};
 use crate::git::types::{
     BlameLine, BranchInfo, ChangedFileSummary, CherryPickStatus, CommitDetail, CommitSummary,
     FileDiff, FileStatusKind, GitFlowConfig, LogFilters, MergeStatus, RebaseStatus, ReflogEntry,
-    RemoteFetchResult, RemoteInfo, RepoInfo, Signature, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
+    RemoteFetchResult, RemoteInfo, RepoInfo, Signature, StashEntry, StatusEntry, SubmoduleInfo,
+    TagInfo,
 };
 
 /// Concrete implementation of `GitRepository` backed by the system `git` binary.
@@ -121,8 +122,16 @@ fn parse_commit_summary(record: &str) -> Option<CommitSummary> {
         oid,
         short_oid,
         summary,
-        author: Signature { name: author_name, email: author_email, when: author_ts },
-        committer: Signature { name: committer_name, email: committer_email, when: committer_ts },
+        author: Signature {
+            name: author_name,
+            email: author_email,
+            when: author_ts,
+        },
+        committer: Signature {
+            name: committer_name,
+            email: committer_email,
+            when: committer_ts,
+        },
         parent_oids,
     })
 }
@@ -178,7 +187,12 @@ fn parse_status(raw: &str) -> Vec<StatusEntry> {
         } else {
             None
         };
-        entries.push(StatusEntry { path, old_path, staged, unstaged });
+        entries.push(StatusEntry {
+            path,
+            old_path,
+            staged,
+            unstaged,
+        });
         i += 1;
     }
     entries
@@ -190,12 +204,16 @@ fn parse_ahead_behind(track: &str) -> (Option<usize>, Option<usize>) {
     let mut behind = None;
     if let Some(pos) = track.find("ahead ") {
         let rest = &track[pos + 6..];
-        let end = rest.find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len());
+        let end = rest
+            .find(|c: char| !c.is_ascii_digit())
+            .unwrap_or(rest.len());
         ahead = rest[..end].parse().ok();
     }
     if let Some(pos) = track.find("behind ") {
         let rest = &track[pos + 7..];
-        let end = rest.find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len());
+        let end = rest
+            .find(|c: char| !c.is_ascii_digit())
+            .unwrap_or(rest.len());
         behind = rest[..end].parse().ok();
     }
     (ahead, behind)
@@ -235,7 +253,8 @@ impl GitRepository for CliGitRepository {
 
     fn repo_info(&self) -> Result<RepoInfo> {
         let path_str = self.path.to_string_lossy().to_string();
-        let name = self.path
+        let name = self
+            .path
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| path_str.clone());
@@ -249,7 +268,12 @@ impl GitRepository for CliGitRepository {
             .ok()
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty());
-        Ok(RepoInfo { path: path_str, name, head_branch, head_oid })
+        Ok(RepoInfo {
+            path: path_str,
+            name,
+            head_branch,
+            head_oid,
+        })
     }
 
     // ── Status & staging ─────────────────────────────────────────────────────
@@ -261,7 +285,11 @@ impl GitRepository for CliGitRepository {
 
     fn list_tracked_files(&self) -> Result<Vec<String>> {
         let raw = self.run(&["ls-files"])?;
-        Ok(raw.lines().filter(|l| !l.is_empty()).map(|l| l.to_string()).collect())
+        Ok(raw
+            .lines()
+            .filter(|l| !l.is_empty())
+            .map(|l| l.to_string())
+            .collect())
     }
 
     fn stage_file(&self, path: &str) -> Result<()> {
@@ -314,7 +342,9 @@ impl GitRepository for CliGitRepository {
 
     fn reset_staged_conflict_file(&self, path: &str) -> Result<()> {
         // CLI backend: not supported (requires complex index manipulation)
-        Err(Self::unsupported(&format!("reset_staged_conflict_file({path})")))
+        Err(Self::unsupported(&format!(
+            "reset_staged_conflict_file({path})"
+        )))
     }
 
     fn reset_all_conflict_files(&self) -> Result<()> {
@@ -326,7 +356,8 @@ impl GitRepository for CliGitRepository {
     }
 
     fn resolve_deletion_restore(&self, path: &str) -> Result<()> {
-        self.run(&["checkout", "MERGE_HEAD", "--", path]).map(|_| ())
+        self.run(&["checkout", "MERGE_HEAD", "--", path])
+            .map(|_| ())
     }
 
     fn resolve_deletion_accept_theirs(&self, path: &str) -> Result<()> {
@@ -337,11 +368,21 @@ impl GitRepository for CliGitRepository {
         self.run(&["add", "--", path]).map(|_| ())
     }
 
-    fn stage_hunk(&self, _path: &str, _hunk_index: usize, _selected: Option<&[usize]>) -> Result<()> {
+    fn stage_hunk(
+        &self,
+        _path: &str,
+        _hunk_index: usize,
+        _selected: Option<&[usize]>,
+    ) -> Result<()> {
         Err(Self::unsupported("staging de hunk partiel"))
     }
 
-    fn unstage_hunk(&self, _path: &str, _hunk_index: usize, _selected: Option<&[usize]>) -> Result<()> {
+    fn unstage_hunk(
+        &self,
+        _path: &str,
+        _hunk_index: usize,
+        _selected: Option<&[usize]>,
+    ) -> Result<()> {
         Err(Self::unsupported("unstaging de hunk partiel"))
     }
 
@@ -430,8 +471,14 @@ impl GitRepository for CliGitRepository {
         };
 
         // --root handles initial commits (no parents)
-        let files_raw = self
-            .run(&["diff-tree", "--root", "--no-commit-id", "-r", "--name-status", oid])?;
+        let files_raw = self.run(&[
+            "diff-tree",
+            "--root",
+            "--no-commit-id",
+            "-r",
+            "--name-status",
+            oid,
+        ])?;
         let changed_files = parse_name_status(&files_raw);
 
         Ok(CommitDetail {
@@ -466,7 +513,13 @@ impl GitRepository for CliGitRepository {
     fn list_branches(&self, _filter: Option<&str>) -> Result<Vec<BranchInfo>> {
         // Tab-separated: refname, refname:short, objectname:short, upstream:short, upstream:track, HEAD
         let fmt = "%(refname)\t%(refname:short)\t%(objectname:short)\t%(upstream:short)\t%(upstream:track)\t%(HEAD)";
-        let raw = self.run(&["for-each-ref", "--format", fmt, "refs/heads", "refs/remotes"])?;
+        let raw = self.run(&[
+            "for-each-ref",
+            "--format",
+            fmt,
+            "refs/heads",
+            "refs/remotes",
+        ])?;
 
         let current = self
             .run(&["rev-parse", "--abbrev-ref", "HEAD"])
@@ -482,12 +535,28 @@ impl GitRepository for CliGitRepository {
             }
             let refname = parts[0];
             let name = parts[1].to_string();
-            let head_oid = if parts[2].is_empty() { None } else { Some(parts[2].to_string()) };
-            let upstream = if parts[3].is_empty() { None } else { Some(parts[3].to_string()) };
+            let head_oid = if parts[2].is_empty() {
+                None
+            } else {
+                Some(parts[2].to_string())
+            };
+            let upstream = if parts[3].is_empty() {
+                None
+            } else {
+                Some(parts[3].to_string())
+            };
             let (ahead, behind) = parse_ahead_behind(parts[4]);
             let is_remote = refname.starts_with("refs/remotes/");
             let is_head = !is_remote && name == current;
-            branches.push(BranchInfo { name, is_remote, is_head, upstream, ahead, behind, head_oid });
+            branches.push(BranchInfo {
+                name,
+                is_remote,
+                is_head,
+                upstream,
+                ahead,
+                behind,
+                head_oid,
+            });
         }
         Ok(branches)
     }
@@ -514,7 +583,9 @@ impl GitRepository for CliGitRepository {
         self.list_branches(None)?
             .into_iter()
             .find(|b| b.name == new_name)
-            .ok_or_else(|| AppError::Other(format!("Branche '{new_name}' introuvable après renommage")))
+            .ok_or_else(|| {
+                AppError::Other(format!("Branche '{new_name}' introuvable après renommage"))
+            })
     }
 
     fn checkout_remote_branch(&self, remote_branch_name: &str) -> Result<BranchInfo> {
@@ -531,11 +602,19 @@ impl GitRepository for CliGitRepository {
     }
 
     fn set_branch_upstream(&self, branch_name: &str, upstream: &str) -> Result<BranchInfo> {
-        self.run(&["branch", &format!("--set-upstream-to={upstream}"), branch_name])?;
+        self.run(&[
+            "branch",
+            &format!("--set-upstream-to={upstream}"),
+            branch_name,
+        ])?;
         self.list_branches(None)?
             .into_iter()
             .find(|b| b.name == branch_name)
-            .ok_or_else(|| AppError::Other(format!("Branche '{branch_name}' introuvable après set-upstream")))
+            .ok_or_else(|| {
+                AppError::Other(format!(
+                    "Branche '{branch_name}' introuvable après set-upstream"
+                ))
+            })
     }
 
     fn unset_branch_upstream(&self, branch_name: &str) -> Result<BranchInfo> {
@@ -543,7 +622,11 @@ impl GitRepository for CliGitRepository {
         self.list_branches(None)?
             .into_iter()
             .find(|b| b.name == branch_name)
-            .ok_or_else(|| AppError::Other(format!("Branche '{branch_name}' introuvable après unset-upstream")))
+            .ok_or_else(|| {
+                AppError::Other(format!(
+                    "Branche '{branch_name}' introuvable après unset-upstream"
+                ))
+            })
     }
 
     // ── Remotes ──────────────────────────────────────────────────────────────
@@ -554,14 +637,18 @@ impl GitRepository for CliGitRepository {
         let mut map: std::collections::BTreeMap<String, (String, Option<String>)> =
             std::collections::BTreeMap::new();
         for line in raw.lines() {
-            let Some((name_part, rest)) = line.split_once('\t') else { continue };
+            let Some((name_part, rest)) = line.split_once('\t') else {
+                continue;
+            };
             let name = name_part.trim().to_string();
             let url_part = rest.trim();
             if let Some(url) = url_part.strip_suffix(" (fetch)") {
                 let e = map.entry(name).or_insert_with(|| (url.to_string(), None));
                 e.0 = url.to_string();
             } else if let Some(push_url) = url_part.strip_suffix(" (push)") {
-                let e = map.entry(name).or_insert_with(|| (push_url.to_string(), None));
+                let e = map
+                    .entry(name)
+                    .or_insert_with(|| (push_url.to_string(), None));
                 if e.0 != push_url {
                     e.1 = Some(push_url.to_string());
                 }
@@ -569,13 +656,21 @@ impl GitRepository for CliGitRepository {
         }
         Ok(map
             .into_iter()
-            .map(|(name, (url, push_url))| RemoteInfo { name, url, push_url })
+            .map(|(name, (url, push_url))| RemoteInfo {
+                name,
+                url,
+                push_url,
+            })
             .collect())
     }
 
     fn add_remote(&self, name: &str, url: &str) -> Result<RemoteInfo> {
         self.run(&["remote", "add", name, url])?;
-        Ok(RemoteInfo { name: name.to_string(), url: url.to_string(), push_url: None })
+        Ok(RemoteInfo {
+            name: name.to_string(),
+            url: url.to_string(),
+            push_url: None,
+        })
     }
 
     fn remove_remote(&self, name: &str) -> Result<()> {
@@ -589,14 +684,29 @@ impl GitRepository for CliGitRepository {
     fn fetch_all_remotes(&self) -> Vec<RemoteFetchResult> {
         let remote_names = match self.list_remotes() {
             Ok(remotes) => remotes.into_iter().map(|r| r.name).collect::<Vec<_>>(),
-            Err(e) => return vec![RemoteFetchResult { remote: "*".into(), ok: false, error: Some(e.to_string()) }],
-        };
-        remote_names.into_iter().map(|name| {
-            match self.fetch_remote(&name) {
-                Ok(()) => RemoteFetchResult { remote: name, ok: true, error: None },
-                Err(e) => RemoteFetchResult { remote: name, ok: false, error: Some(e.to_string()) },
+            Err(e) => {
+                return vec![RemoteFetchResult {
+                    remote: "*".into(),
+                    ok: false,
+                    error: Some(e.to_string()),
+                }]
             }
-        }).collect()
+        };
+        remote_names
+            .into_iter()
+            .map(|name| match self.fetch_remote(&name) {
+                Ok(()) => RemoteFetchResult {
+                    remote: name,
+                    ok: true,
+                    error: None,
+                },
+                Err(e) => RemoteFetchResult {
+                    remote: name,
+                    ok: false,
+                    error: Some(e.to_string()),
+                },
+            })
+            .collect()
     }
 
     fn push_remote(&self, remote_name: &str, branch: &str) -> Result<()> {
@@ -648,7 +758,12 @@ impl GitRepository for CliGitRepository {
         Err(Self::unsupported("blame"))
     }
 
-    fn get_file_diff(&self, _path: &str, _staged: bool, _ignore_whitespace: bool) -> Result<FileDiff> {
+    fn get_file_diff(
+        &self,
+        _path: &str,
+        _staged: bool,
+        _ignore_whitespace: bool,
+    ) -> Result<FileDiff> {
         Err(Self::unsupported("diff de fichier"))
     }
 
@@ -724,11 +839,18 @@ impl GitRepository for CliGitRepository {
         Err(Self::unsupported("abort rebase"))
     }
 
-    fn get_interactive_rebase_commits(&self, _upstream_oid: &str) -> Result<Vec<crate::git::types::RebaseEntry>> {
+    fn get_interactive_rebase_commits(
+        &self,
+        _upstream_oid: &str,
+    ) -> Result<Vec<crate::git::types::RebaseEntry>> {
         Err(Self::unsupported("rebase interactif"))
     }
 
-    fn apply_interactive_rebase(&self, _upstream_oid: &str, _steps: Vec<crate::git::types::RebaseStep>) -> Result<RebaseStatus> {
+    fn apply_interactive_rebase(
+        &self,
+        _upstream_oid: &str,
+        _steps: Vec<crate::git::types::RebaseStep>,
+    ) -> Result<RebaseStatus> {
         Err(Self::unsupported("rebase interactif"))
     }
 
@@ -736,7 +858,12 @@ impl GitRepository for CliGitRepository {
         Err(Self::unsupported("tags"))
     }
 
-    fn create_tag(&self, _name: &str, _target_oid: &str, _message: Option<&str>) -> Result<TagInfo> {
+    fn create_tag(
+        &self,
+        _name: &str,
+        _target_oid: &str,
+        _message: Option<&str>,
+    ) -> Result<TagInfo> {
         Err(Self::unsupported("création de tag"))
     }
 

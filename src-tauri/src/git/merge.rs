@@ -30,7 +30,10 @@ pub fn merge_branch(repo: &Repository, branch_name: &str, no_ff: bool) -> Result
         )?;
         repo.checkout_tree(target_commit.as_object(), None)?;
         repo.set_head(&refname)?;
-        return Ok(MergeStatus { has_conflicts: false, conflict_count: 0 });
+        return Ok(MergeStatus {
+            has_conflicts: false,
+            conflict_count: 0,
+        });
     }
 
     // Normal merge (or forced no-ff)
@@ -41,19 +44,21 @@ pub fn merge_branch(repo: &Repository, branch_name: &str, no_ff: bool) -> Result
 
     if index.has_conflicts() {
         let conflict_count = index.conflicts()?.count();
-        return Ok(MergeStatus { has_conflicts: true, conflict_count });
+        return Ok(MergeStatus {
+            has_conflicts: true,
+            conflict_count,
+        });
     }
 
     // No conflicts — create merge commit automatically
-    let head_name = repo
-        .head()?
-        .shorthand()
-        .unwrap_or("HEAD")
-        .to_string();
+    let head_name = repo.head()?.shorthand().unwrap_or("HEAD").to_string();
     let message = format!("Merge branch '{branch_name}' into {head_name}");
     create_commit(repo, &message)?;
 
-    Ok(MergeStatus { has_conflicts: false, conflict_count: 0 })
+    Ok(MergeStatus {
+        has_conflicts: false,
+        conflict_count: 0,
+    })
 }
 
 pub fn abort_merge(repo: &Repository) -> Result<()> {
@@ -68,9 +73,10 @@ pub fn abort_merge(repo: &Repository) -> Result<()> {
 
 pub fn get_repository_state(repo: &Repository) -> &'static str {
     match repo.state() {
-        git2::RepositoryState::Merge       => "merge",
-        git2::RepositoryState::CherryPick
-        | git2::RepositoryState::CherryPickSequence => "cherry_pick",
+        git2::RepositoryState::Merge => "merge",
+        git2::RepositoryState::CherryPick | git2::RepositoryState::CherryPickSequence => {
+            "cherry_pick"
+        }
         git2::RepositoryState::Rebase
         | git2::RepositoryState::RebaseInteractive
         | git2::RepositoryState::RebaseMerge => "rebase",
@@ -98,7 +104,8 @@ mod tests {
             let tree_oid = index.write_tree().unwrap();
             let tree = repo.find_tree(tree_oid).unwrap();
             let sig = repo.signature().unwrap();
-            repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[]).unwrap();
+            repo.commit(Some("HEAD"), &sig, &sig, "init", &tree, &[])
+                .unwrap();
         }
         (tmp, repo)
     }

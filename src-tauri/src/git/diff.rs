@@ -28,8 +28,10 @@ fn convert_diff(diff: git2::Diff) -> Result<Vec<FileDiff>> {
             None => {
                 files.push(FileDiff {
                     old_path: old_path.filter(|p| {
-                        matches!(delta.status(), Delta::Deleted | Delta::Renamed | Delta::Copied)
-                            || new_path.as_deref() != Some(p)
+                        matches!(
+                            delta.status(),
+                            Delta::Deleted | Delta::Renamed | Delta::Copied
+                        ) || new_path.as_deref() != Some(p)
                     }),
                     new_path,
                     is_binary,
@@ -37,7 +39,9 @@ fn convert_diff(diff: git2::Diff) -> Result<Vec<FileDiff>> {
                     deleted_in_conflict: false,
                     deleted_by_them: false,
                 });
-                files.last_mut().expect("invariant: files non vide après push")
+                files
+                    .last_mut()
+                    .expect("invariant: files non vide après push")
             }
         };
 
@@ -47,7 +51,12 @@ fn convert_diff(diff: git2::Diff) -> Result<Vec<FileDiff>> {
 
         if let Some(h) = hunk {
             let header = String::from_utf8_lossy(h.header()).to_string();
-            if file_diff.hunks.last().map(|hk: &DiffHunk| hk.header != header).unwrap_or(true) {
+            if file_diff
+                .hunks
+                .last()
+                .map(|hk: &DiffHunk| hk.header != header)
+                .unwrap_or(true)
+            {
                 file_diff.hunks.push(DiffHunk {
                     header,
                     lines: Vec::new(),
@@ -82,7 +91,9 @@ fn detect_added_by_both(workdir: &std::path::Path, path: &str) -> Option<(String
     let filename = std::path::Path::new(path)
         .file_name()
         .map(|n| n.to_string_lossy().to_string())?;
-    let dir = workdir.join(path).parent()
+    let dir = workdir
+        .join(path)
+        .parent()
         .map(|p| p.to_path_buf())
         .unwrap_or_else(|| workdir.to_path_buf());
 
@@ -141,9 +152,8 @@ fn get_conflict_file_content(repo: &Repository, path: &str) -> Result<FileDiff> 
             } else {
                 format!("{branch_content}\n")
             };
-            let synthetic = format!(
-                "<<<<<<< HEAD\n{head_str}=======\n{branch_str}>>>>>>> {branch_label}\n"
-            );
+            let synthetic =
+                format!("<<<<<<< HEAD\n{head_str}=======\n{branch_str}>>>>>>> {branch_label}\n");
             let lines: Vec<DiffLine> = synthetic
                 .lines()
                 .enumerate()
@@ -219,7 +229,12 @@ fn get_conflict_file_content(repo: &Repository, path: &str) -> Result<FileDiff> 
     })
 }
 
-pub fn get_file_diff(repo: &Repository, path: &str, staged: bool, ignore_whitespace: bool) -> Result<FileDiff> {
+pub fn get_file_diff(
+    repo: &Repository,
+    path: &str,
+    staged: bool,
+    ignore_whitespace: bool,
+) -> Result<FileDiff> {
     // Conflicted files have index entries at stages 1/2/3 — diff_index_to_workdir
     // emits no delta for them. Read the working-dir content directly instead so the
     // conflict markers are visible.
@@ -231,7 +246,8 @@ pub fn get_file_diff(repo: &Repository, path: &str, staged: bool, ignore_whitesp
         // Conflict types and their stage entries:
         //   UU / DU / UD: stage 1 exists (common ancestor)
         //   AA (added by both sides): stages 2+3 exist but NOT stage 1
-        let is_conflicted = repo.index()
+        let is_conflicted = repo
+            .index()
             .ok()
             .map(|index| {
                 let p = std::path::Path::new(path);
@@ -248,12 +264,11 @@ pub fn get_file_diff(repo: &Repository, path: &str, staged: bool, ignore_whitesp
     // filter by exact path in Rust.
     let diff = if staged {
         // Staged diff: compare HEAD tree vs index
-        let head_tree = repo
-            .head()
-            .ok()
-            .and_then(|h| h.peel_to_tree().ok());
+        let head_tree = repo.head().ok().and_then(|h| h.peel_to_tree().ok());
         let mut opts = DiffOptions::new();
-        if ignore_whitespace { opts.ignore_whitespace(true); }
+        if ignore_whitespace {
+            opts.ignore_whitespace(true);
+        }
         repo.diff_tree_to_index(head_tree.as_ref(), None, Some(&mut opts))?
     } else {
         // Unstaged diff: compare index vs working dir.
@@ -263,16 +278,16 @@ pub fn get_file_diff(repo: &Repository, path: &str, staged: bool, ignore_whitesp
         opts.include_untracked(true)
             .show_untracked_content(true)
             .recurse_untracked_dirs(true);
-        if ignore_whitespace { opts.ignore_whitespace(true); }
+        if ignore_whitespace {
+            opts.ignore_whitespace(true);
+        }
         repo.diff_index_to_workdir(None, Some(&mut opts))?
     };
 
     let files = convert_diff(diff)?;
     let found = files
         .into_iter()
-        .find(|f| {
-            f.new_path.as_deref() == Some(path) || f.old_path.as_deref() == Some(path)
-        });
+        .find(|f| f.new_path.as_deref() == Some(path) || f.old_path.as_deref() == Some(path));
 
     // If the normal diff returned no entry, or returned an entry with empty hunks, it may
     // be a conflict file that repo.index() failed to detect (e.g. AA conflict when the NAME
@@ -304,7 +319,8 @@ pub fn get_file_diff(repo: &Repository, path: &str, staged: bool, ignore_whitesp
                 //       conflicted but the early is_conflicted check returned false.
                 //   (b) Post-resolution: stages cleared, workdir == index → no delta.
                 // Re-check conflict stages and ~HEAD/~BRANCH presence to distinguish.
-                let still_conflicted = repo.index()
+                let still_conflicted = repo
+                    .index()
                     .ok()
                     .map(|idx| {
                         let p = std::path::Path::new(path);
@@ -340,25 +356,33 @@ pub fn get_file_diff(repo: &Repository, path: &str, staged: bool, ignore_whitesp
     }
 }
 
-pub fn get_commit_diff(repo: &Repository, oid_str: &str, ignore_whitespace: bool) -> Result<Vec<FileDiff>> {
+pub fn get_commit_diff(
+    repo: &Repository,
+    oid_str: &str,
+    ignore_whitespace: bool,
+) -> Result<Vec<FileDiff>> {
     let oid = Oid::from_str(oid_str)?;
     let commit = repo.find_commit(oid)?;
     let tree = commit.tree()?;
 
-    let parent_tree = commit
-        .parent(0)
-        .ok()
-        .and_then(|p| p.tree().ok());
+    let parent_tree = commit.parent(0).ok().and_then(|p| p.tree().ok());
 
     let mut opts = DiffOptions::new();
-    if ignore_whitespace { opts.ignore_whitespace(true); }
+    if ignore_whitespace {
+        opts.ignore_whitespace(true);
+    }
     let diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), Some(&mut opts))?;
     convert_diff(diff)
 }
 
 /// Get the diff for a single file within a commit. Uses a pathspec so only that
 /// file's patch is computed — safe for large commits.
-pub fn get_commit_file_diff(repo: &Repository, commit_oid: &str, path: &str, ignore_whitespace: bool) -> Result<FileDiff> {
+pub fn get_commit_file_diff(
+    repo: &Repository,
+    commit_oid: &str,
+    path: &str,
+    ignore_whitespace: bool,
+) -> Result<FileDiff> {
     let oid = Oid::from_str(commit_oid)?;
     let commit = repo.find_commit(oid)?;
     let tree = commit.tree()?;
@@ -366,7 +390,9 @@ pub fn get_commit_file_diff(repo: &Repository, commit_oid: &str, path: &str, ign
 
     let mut opts = DiffOptions::new();
     opts.pathspec(path);
-    if ignore_whitespace { opts.ignore_whitespace(true); }
+    if ignore_whitespace {
+        opts.ignore_whitespace(true);
+    }
     let diff = repo.diff_tree_to_tree(parent_tree.as_ref(), Some(&tree), Some(&mut opts))?;
     let files = convert_diff(diff)?;
     files

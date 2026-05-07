@@ -57,7 +57,9 @@ pub fn detect_git_binary(app: AppHandle) -> Result<(String, String)> {
     if !version_out.status.success() {
         return Err(AppError::Other("git introuvable dans le PATH".into()));
     }
-    let version = String::from_utf8_lossy(&version_out.stdout).trim().to_string();
+    let version = String::from_utf8_lossy(&version_out.stdout)
+        .trim()
+        .to_string();
 
     #[cfg(target_os = "windows")]
     let which_cmd = "where";
@@ -69,9 +71,7 @@ pub fn detect_git_binary(app: AppHandle) -> Result<(String, String)> {
         .output()
         .ok()
         .filter(|o| o.status.success())
-        .and_then(|o| {
-            String::from_utf8(o.stdout).ok()
-        })
+        .and_then(|o| String::from_utf8(o.stdout).ok())
         .map(|s| s.trim().lines().next().unwrap_or("git").to_string())
         .unwrap_or_else(|| "git".to_string());
 
@@ -116,7 +116,9 @@ pub async fn clone_repository(
 
 #[tauri::command]
 pub fn close_repository(app: AppHandle, state: State<AppState>) {
-    if let Ok(mut guard) = state.lock_repo() { *guard = None; }
+    if let Ok(mut guard) = state.lock_repo() {
+        *guard = None;
+    }
     emit_info(&app, "close_repository", "Repository closed");
 }
 

@@ -1,7 +1,13 @@
+// Test helpers shared across integration tests. Some helpers are reserved for
+// future scenarios that haven't been wired in yet — silence dead-code, unused
+// macro and unused import warnings at the module level so clippy --all-targets
+// stays green.
+#![allow(dead_code, unused_macros, unused_imports)]
+
+use mcgit_lib::infrastructure::cli_impl::CliGitRepository;
+use mcgit_lib::infrastructure::git2_impl::Git2Repository;
 use std::path::PathBuf;
 use tempfile::TempDir;
-use mcgit_lib::infrastructure::git2_impl::Git2Repository;
-use mcgit_lib::infrastructure::cli_impl::CliGitRepository;
 
 /// Ephemeral git repository for integration tests.
 pub struct TestRepo {
@@ -19,12 +25,20 @@ impl TestRepo {
         let repo = git2::Repository::init(&path).expect("failed to init repo");
         {
             let mut config = repo.config().expect("failed to open config");
-            config.set_str("user.name", "mcgit test").expect("set user.name");
-            config.set_str("user.email", "test@mcgit.local").expect("set user.email");
+            config
+                .set_str("user.name", "mcgit test")
+                .expect("set user.name");
+            config
+                .set_str("user.email", "test@mcgit.local")
+                .expect("set user.email");
         }
         drop(repo);
 
-        Self { _tmp: tmp, _bare_tmp: None, path }
+        Self {
+            _tmp: tmp,
+            _bare_tmp: None,
+            path,
+        }
     }
 
     /// Write a file in the worktree.

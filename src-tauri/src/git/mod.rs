@@ -14,22 +14,21 @@ pub fn git_available() -> bool {
         .map(|o| o.status.success())
         .unwrap_or(false)
 }
-pub mod known_hosts;
-pub mod trusted_hosts;
-pub mod gpg;
-pub mod gitflow;
 pub mod branch;
-pub mod patch;
 pub mod cherry_pick;
-pub mod rebase;
-pub mod merge;
 pub mod clone;
 pub mod commit;
 pub mod config;
 pub mod credential_store;
 pub mod credentials;
 pub mod diff;
+pub mod gitflow;
+pub mod gpg;
 pub mod history;
+pub mod known_hosts;
+pub mod merge;
+pub mod patch;
+pub mod rebase;
 pub mod reflog;
 pub mod remote;
 pub mod repository;
@@ -37,4 +36,5 @@ pub mod stash;
 pub mod status;
 pub mod submodule;
 pub mod tag;
+pub mod trusted_hosts;
 pub mod types;

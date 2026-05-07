@@ -1,6 +1,8 @@
 use crate::error::Result;
 use crate::git::types::{
-    BlameLine, BranchInfo, CherryPickStatus, CommitDetail, CommitSummary, FileDiff, GitFlowConfig, LogFilters, MergeStatus, RebaseEntry, RebaseStatus, RebaseStep, ReflogEntry, RemoteFetchResult, RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
+    BlameLine, BranchInfo, CherryPickStatus, CommitDetail, CommitSummary, FileDiff, GitFlowConfig,
+    LogFilters, MergeStatus, RebaseEntry, RebaseStatus, RebaseStep, ReflogEntry, RemoteFetchResult,
+    RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
 };
 
 /// Abstract port for all git operations on an opened repository.
@@ -21,7 +23,8 @@ pub trait GitRepository: Send {
     fn stage_all(&self) -> Result<()>;
     fn unstage_all(&self) -> Result<()>;
     fn stage_hunk(&self, path: &str, hunk_index: usize, selected: Option<&[usize]>) -> Result<()>;
-    fn unstage_hunk(&self, path: &str, hunk_index: usize, selected: Option<&[usize]>) -> Result<()>;
+    fn unstage_hunk(&self, path: &str, hunk_index: usize, selected: Option<&[usize]>)
+        -> Result<()>;
     fn reset_conflict_file(&self, path: &str) -> Result<()>;
     fn reset_staged_conflict_file(&self, path: &str) -> Result<()>;
     fn reset_all_conflict_files(&self) -> Result<()>;
@@ -44,7 +47,12 @@ pub trait GitRepository: Send {
     // Diff
     fn get_file_diff(&self, path: &str, staged: bool, ignore_whitespace: bool) -> Result<FileDiff>;
     fn get_commit_diff(&self, oid: &str, ignore_whitespace: bool) -> Result<Vec<FileDiff>>;
-    fn get_commit_file_diff(&self, commit_oid: &str, path: &str, ignore_whitespace: bool) -> Result<FileDiff>;
+    fn get_commit_file_diff(
+        &self,
+        commit_oid: &str,
+        path: &str,
+        ignore_whitespace: bool,
+    ) -> Result<FileDiff>;
 
     // Merge
     fn merge_branch(&self, branch_name: &str, no_ff: bool) -> Result<MergeStatus>;
@@ -61,10 +69,20 @@ pub trait GitRepository: Send {
     fn continue_rebase(&self) -> Result<RebaseStatus>;
     fn abort_rebase(&self) -> Result<()>;
     fn get_interactive_rebase_commits(&self, upstream_oid: &str) -> Result<Vec<RebaseEntry>>;
-    fn apply_interactive_rebase(&self, upstream_oid: &str, steps: Vec<RebaseStep>) -> Result<RebaseStatus>;
+    fn apply_interactive_rebase(
+        &self,
+        upstream_oid: &str,
+        steps: Vec<RebaseStep>,
+    ) -> Result<RebaseStatus>;
 
     // History
-    fn get_log(&self, limit: usize, offset: usize, branch: Option<&str>, filters: Option<&LogFilters>) -> Result<Vec<CommitSummary>>;
+    fn get_log(
+        &self,
+        limit: usize,
+        offset: usize,
+        branch: Option<&str>,
+        filters: Option<&LogFilters>,
+    ) -> Result<Vec<CommitSummary>>;
     fn get_graph_log(&self, limit: usize, show_all: bool) -> Result<Vec<CommitSummary>>;
     fn get_commit_detail(&self, oid: &str) -> Result<CommitDetail>;
     fn reset_to_commit(&self, oid: &str, mode: &str) -> Result<()>;
@@ -132,7 +150,12 @@ pub trait GitRepository: Send {
     fn delete_remote_tag(&self, remote_name: &str, tag_name: &str) -> Result<()>;
 
     // Stash
-    fn stash_save(&self, message: Option<&str>, include_untracked: bool, keep_index: bool) -> Result<String>;
+    fn stash_save(
+        &self,
+        message: Option<&str>,
+        include_untracked: bool,
+        keep_index: bool,
+    ) -> Result<String>;
     fn stash_list(&self) -> Result<Vec<StashEntry>>;
     fn stash_apply(&self, index: usize) -> Result<()>;
     fn stash_pop(&self, index: usize) -> Result<()>;

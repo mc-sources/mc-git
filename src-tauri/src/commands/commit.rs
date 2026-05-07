@@ -6,7 +6,11 @@ use crate::logger::log_result;
 use crate::state::AppState;
 
 #[tauri::command]
-pub fn create_commit(message: String, app: AppHandle, state: State<AppState>) -> Result<CommitSummary> {
+pub fn create_commit(
+    message: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<CommitSummary> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
@@ -16,7 +20,11 @@ pub fn create_commit(message: String, app: AppHandle, state: State<AppState>) ->
 }
 
 #[tauri::command]
-pub fn amend_commit(message: String, app: AppHandle, state: State<AppState>) -> Result<CommitSummary> {
+pub fn amend_commit(
+    message: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<CommitSummary> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;

@@ -68,5 +68,9 @@ pub fn delete_remote_tag(
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
         repo.delete_remote_tag(&remote_name, &tag_name)
     };
-    log_result(&app, &format!("delete_remote_tag({remote_name}/{tag_name})"), result)
+    log_result(
+        &app,
+        &format!("delete_remote_tag({remote_name}/{tag_name})"),
+        result,
+    )
 }

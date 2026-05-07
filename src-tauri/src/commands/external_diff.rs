@@ -83,9 +83,7 @@ pub fn open_external_diff(
         .arg(&tmp_old)
         .arg(&tmp_new)
         .spawn()
-        .map_err(|e| {
-            AppError::Other(format!("Failed to launch diff tool '{}': {e}", parts[0]))
-        })?;
+        .map_err(|e| AppError::Other(format!("Failed to launch diff tool '{}': {e}", parts[0])))?;
 
     Ok(())
 }

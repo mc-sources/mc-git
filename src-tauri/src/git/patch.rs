@@ -1,5 +1,5 @@
-use std::path::Path;
 use git2::{DiffOptions, Repository};
+use std::path::Path;
 
 use crate::error::{AppError, Result};
 
@@ -83,8 +83,14 @@ pub fn stage_hunk(
     let delta_idx = diff
         .deltas()
         .position(|d| {
-            d.new_file().path().map(|p| p == Path::new(path)).unwrap_or(false)
-                || d.old_file().path().map(|p| p == Path::new(path)).unwrap_or(false)
+            d.new_file()
+                .path()
+                .map(|p| p == Path::new(path))
+                .unwrap_or(false)
+                || d.old_file()
+                    .path()
+                    .map(|p| p == Path::new(path))
+                    .unwrap_or(false)
         })
         .ok_or_else(|| AppError::Other(format!("No unstaged diff for '{path}'")))?;
 
@@ -113,7 +119,7 @@ pub fn stage_hunk(
             ' ' => true, // context: always keep
             '+' => selected.is_none_or(|sel| sel.contains(&i)),
             '-' => selected.is_some_and(|sel| !sel.contains(&i)), // keep unselected deletions
-            _ => false, // no-newline markers etc.
+            _ => false,                                           // no-newline markers etc.
         };
         if include {
             replacement.push(line.content().to_vec());
@@ -153,8 +159,14 @@ pub fn unstage_hunk(
     let delta_idx = diff
         .deltas()
         .position(|d| {
-            d.new_file().path().map(|p| p == Path::new(path)).unwrap_or(false)
-                || d.old_file().path().map(|p| p == Path::new(path)).unwrap_or(false)
+            d.new_file()
+                .path()
+                .map(|p| p == Path::new(path))
+                .unwrap_or(false)
+                || d.old_file()
+                    .path()
+                    .map(|p| p == Path::new(path))
+                    .unwrap_or(false)
         })
         .ok_or_else(|| AppError::Other(format!("No staged diff for '{path}'")))?;
 
@@ -180,8 +192,8 @@ pub fn unstage_hunk(
         let line = patch.line_in_hunk(hunk_index, i)?;
         let origin = line.origin();
         let include = match origin {
-            ' ' => true, // context: always keep
-            '-' => selected.is_none_or(|sel| sel.contains(&i)), // HEAD lines to restore
+            ' ' => true,                                          // context: always keep
+            '-' => selected.is_none_or(|sel| sel.contains(&i)),   // HEAD lines to restore
             '+' => selected.is_some_and(|sel| !sel.contains(&i)), // keep unselected index additions
             _ => false,
         };

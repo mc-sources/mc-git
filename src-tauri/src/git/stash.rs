@@ -37,12 +37,14 @@ pub fn stash_list(repo: &mut Repository) -> Result<Vec<StashEntry>> {
 
 pub fn stash_apply(repo: &mut Repository, index: usize) -> Result<()> {
     let mut opts = StashApplyOptions::default();
-    repo.stash_apply(index, Some(&mut opts)).map_err(AppError::from)
+    repo.stash_apply(index, Some(&mut opts))
+        .map_err(AppError::from)
 }
 
 pub fn stash_pop(repo: &mut Repository, index: usize) -> Result<()> {
     let mut opts = StashApplyOptions::default();
-    repo.stash_pop(index, Some(&mut opts)).map_err(AppError::from)
+    repo.stash_pop(index, Some(&mut opts))
+        .map_err(AppError::from)
 }
 
 pub fn stash_drop(repo: &mut Repository, index: usize) -> Result<()> {
