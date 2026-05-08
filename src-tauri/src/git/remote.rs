@@ -48,9 +48,8 @@ pub fn fetch(
         let mut last_pct = u32::MAX;
         callbacks.transfer_progress(move |stats| {
             let total = stats.total_objects() as u32;
-            if total > 0 {
-                let current = stats.received_objects() as u32;
-                let pct = current * 100 / total;
+            let current = stats.received_objects() as u32;
+            if let Some(pct) = current.checked_mul(100).and_then(|n| n.checked_div(total)) {
                 if pct != last_pct {
                     last_pct = pct;
                     cb(current, total);
@@ -85,8 +84,7 @@ pub fn push(
         callbacks.push_transfer_progress(move |current, total, _bytes| {
             let total = total as u32;
             let current = current as u32;
-            if total > 0 {
-                let pct = current * 100 / total;
+            if let Some(pct) = current.checked_mul(100).and_then(|n| n.checked_div(total)) {
                 if pct != last_pct {
                     last_pct = pct;
                     cb(current, total);
