@@ -51,11 +51,7 @@ pub fn fetch_remote(remote_name: String, app: AppHandle, state: State<AppState>)
         repo.fetch_remote_with_progress(
             &remote_name,
             Box::new(move |current, total| {
-                let pct = if total > 0 {
-                    Some(current * 100 / total)
-                } else {
-                    None
-                };
+                let pct = current.checked_mul(100).and_then(|n| n.checked_div(total));
                 emit_progress(&app2, "fetch", "Réception des objets…", pct);
             }),
         )
@@ -80,11 +76,7 @@ pub fn push_remote(
             &remote_name,
             &branch,
             Box::new(move |current, total| {
-                let pct = if total > 0 {
-                    Some(current * 100 / total)
-                } else {
-                    None
-                };
+                let pct = current.checked_mul(100).and_then(|n| n.checked_div(total));
                 emit_progress(&app2, "push", "Envoi des objets…", pct);
             }),
         )
@@ -130,11 +122,7 @@ pub fn pull_remote(
             &remote_name,
             &branch,
             Box::new(move |current, total| {
-                let pct = if total > 0 {
-                    Some(current * 100 / total)
-                } else {
-                    None
-                };
+                let pct = current.checked_mul(100).and_then(|n| n.checked_div(total));
                 emit_progress(&app2, "pull", "Réception des objets…", pct);
             }),
         )

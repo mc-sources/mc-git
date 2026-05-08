@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.5] — 2026-05-08
+
+### Fixed
+
+- **CI clippy** : 5 violations de la nouvelle lint `clippy::manual_checked_ops` (introduite avec Rust 1.95.0) sur le calcul de pourcentage de progression dans `src-tauri/src/commands/remote.rs` (fetch / push / pull) et `src-tauri/src/git/remote.rs` (transfer_progress / push_transfer_progress). Le pattern `if total > 0 { current * 100 / total }` est remplacé par `current.checked_mul(100).and_then(|n| n.checked_div(total))`, qui couvre à la fois la division par zéro et l'overflow potentiel de `current * 100`. Sémantique préservée pour le consommateur (option `pct` ; `None` quand le pourcentage n'est pas calculable). Détection : 1ʳᵉ run réelle de `tests.yml` sur GitHub Actions.
+
+---
+
 ## [0.1.4] — 2026-05-07
 
 ### Added
