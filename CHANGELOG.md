@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.6] — 2026-05-08
+
+### Fixed
+
+- **Compatibilité glibc des bundles Linux** : le workflow `release.yml` utilisait `ubuntu-latest`, désormais aliasé sur **Ubuntu 24.04** (glibc 2.39). Le `.deb` 0.1.5 publié refusait ainsi de démarrer sur Debian 12 bookworm (glibc 2.36) et toute distribution antérieure, avec l'erreur `version 'GLIBC_2.38' not found`. La matrice `build` est épinglée à `ubuntu-22.04` (glibc 2.35), ce qui rend les binaires portables sur Debian 12+, Ubuntu 22.04+, RHEL 9+, et la plupart des distributions courantes. Le binaire 0.1.5 reste publié sur GitHub mais n'est exécutable que sur les distributions livrant glibc ≥ 2.39 — voir 0.1.6 pour un binaire portable. Détection : test à blanc REQ-RELEASE-D2 par le HU sur Debian 12.
+
+---
+
 ## [0.1.5] — 2026-05-08
 
 ### Fixed
