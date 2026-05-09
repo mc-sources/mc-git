@@ -148,6 +148,7 @@ pub trait GitRepository: Send {
     fn delete_tag(&self, name: &str) -> Result<()>;
     fn push_tag(&self, remote_name: &str, tag_name: &str) -> Result<()>;
     fn delete_remote_tag(&self, remote_name: &str, tag_name: &str) -> Result<()>;
+    fn list_remote_tags(&self, remote_name: &str) -> Result<Vec<String>>;
 
     // Stash
     fn stash_save(

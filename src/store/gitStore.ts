@@ -28,6 +28,12 @@ interface GitStore {
   tags: TagInfo[];
   setTags: (tags: TagInfo[]) => void;
 
+  // Tags présents par remote (alimenté par fetchUseCase / pullUseCase / pruneRemoteUseCase post-succès,
+  // via list_remote_tags). Cache RAM, non persistant. Une entrée absente = remote jamais vérifié → état "?<remote>".
+  remoteTagPresence: Map<string, Set<string>>;
+  setRemoteTagPresenceForRemote: (remote: string, tagNames: string[]) => void;
+  clearRemoteTagPresence: () => void;
+
   // Incremented after a commit to trigger log refresh in CommitList
   logVersion: number;
   bumpLogVersion: () => void;
@@ -58,6 +64,15 @@ export const useGitStore = create<GitStore>((set) => ({
   tags: [],
   setTags: (tags) => set({ tags }),
 
+  remoteTagPresence: new Map<string, Set<string>>(),
+  setRemoteTagPresenceForRemote: (remote, tagNames) =>
+    set((state) => {
+      const next = new Map(state.remoteTagPresence);
+      next.set(remote, new Set(tagNames));
+      return { remoteTagPresence: next };
+    }),
+  clearRemoteTagPresence: () => set({ remoteTagPresence: new Map() }),
+
   logVersion: 0,
   bumpLogVersion: () => set((state) => ({ logVersion: state.logVersion + 1 })),
 
@@ -70,5 +85,6 @@ export const useGitStore = create<GitStore>((set) => ({
       graphCommits: [],
       stashes: [],
       tags: [],
+      remoteTagPresence: new Map(),
     }),
 }));

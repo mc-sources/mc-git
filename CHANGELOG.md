@@ -10,6 +10,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.7] — 2026-05-09
+
+### Added
+
+- **Backend `list_remote_tags(remote_name)`** : nouvelle commande Tauri (côté Rust `git/tag.rs`) listant les tags advertisés par un remote (équivalent `git ls-remote --tags`). Strippe le préfixe `refs/tags/` et filtre les peeled refs `^{}` ; résultat trié et dédupliqué. Ajout au trait `GitRepository` (port) avec impl `Git2Repository` (libgit2) et stub `CliGitRepository` (`Err::unsupported`). Use case TS `listRemoteTagsUseCase` exposé.
+- **Cache `gitStore.remoteTagPresence`** : `Map<remoteName, Set<tagName>>` non persistant (RAM uniquement), source de vérité de la présence d'un tag par remote pour l'indicateur multi-remotes à venir (US-0016). Setters `setRemoteTagPresenceForRemote(remote, tagNames)` et `clearRemoteTagPresence()`.
+- **Branchement automatique** sur `fetchUseCase`, `fetchAllUseCase`, `pullUseCase` et `pruneRemoteUseCase` : après succès de l'opération réseau, `list_remote_tags` est appelé sur le remote concerné et le cache mis à jour. Échec silencieux en cas d'erreur de `list_remote_tags` (le cache reste inchangé, l'indicateur restera à l'état « inconnu »).
+
+Première US backend de FEAT-0145 (gestion des tags Mc-Git). Pas de surface UI dans cette US — les indicateurs et opérations qui consomment le cache arrivent en US-0016+.
+
+---
+
 ## [0.1.6] — 2026-05-08
 
 ### Fixed

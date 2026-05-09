@@ -127,6 +127,7 @@ export interface IGitRepository {
   deleteTag(name: string): Promise<void>;
   pushTag(remoteName: string, tagName: string): Promise<void>;
   deleteRemoteTag(remoteName: string, tagName: string): Promise<void>;
+  listRemoteTags(remoteName: string): Promise<string[]>;
 
   // Stash
   stashSave(message: string | null, includeUntracked: boolean, keepIndex: boolean): Promise<string>;
