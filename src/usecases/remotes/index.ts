@@ -1,5 +1,25 @@
 import type { IGitRepository } from "../../domain/ports/IGitRepository";
 import type { RemoteFetchResult, RemoteInfo } from "../../domain/entities";
+import { useGitStore } from "../../store/gitStore";
+import { listRemoteTagsUseCase } from "../tags";
+
+/**
+ * Rafraîchit la présence des tags sur un remote dans le cache `gitStore.remoteTagPresence`.
+ * Échec silencieux : si `list_remote_tags` retourne une erreur (réseau, auth, etc.), on
+ * laisse l'entrée du cache inchangée — l'indicateur multi-remotes restera à `?<remote>`
+ * pour ce remote (cf. ANA-0007 T-0003 §1).
+ */
+async function refreshRemoteTagPresence(
+  repo: IGitRepository,
+  remoteName: string
+): Promise<void> {
+  try {
+    const tagNames = await listRemoteTagsUseCase(repo, remoteName);
+    useGitStore.getState().setRemoteTagPresenceForRemote(remoteName, tagNames);
+  } catch {
+    // Silent degradation — see comment above.
+  }
+}
 
 export async function listRemotesUseCase(repo: IGitRepository): Promise<RemoteInfo[]> {
   return repo.listRemotes();
@@ -18,11 +38,18 @@ export async function removeRemoteUseCase(repo: IGitRepository, name: string): P
 }
 
 export async function fetchUseCase(repo: IGitRepository, remoteName: string): Promise<void> {
-  return repo.fetchRemote(remoteName);
+  await repo.fetchRemote(remoteName);
+  await refreshRemoteTagPresence(repo, remoteName);
 }
 
 export async function fetchAllUseCase(repo: IGitRepository): Promise<RemoteFetchResult[]> {
-  return repo.fetchAllRemotes();
+  const results = await repo.fetchAllRemotes();
+  for (const r of results) {
+    if (r.ok) {
+      await refreshRemoteTagPresence(repo, r.remote);
+    }
+  }
+  return results;
 }
 
 export async function pushUseCase(
@@ -38,7 +65,8 @@ export async function pullUseCase(
   remoteName: string,
   branch: string
 ): Promise<void> {
-  return repo.pullRemote(remoteName, branch);
+  await repo.pullRemote(remoteName, branch);
+  await refreshRemoteTagPresence(repo, remoteName);
 }
 
 export async function pushForceWithLeaseUseCase(
@@ -50,5 +78,6 @@ export async function pushForceWithLeaseUseCase(
 }
 
 export async function pruneRemoteUseCase(repo: IGitRepository, remoteName: string): Promise<void> {
-  return repo.pruneRemote(remoteName);                                                                                                                                                        
+  await repo.pruneRemote(remoteName);
+  await refreshRemoteTagPresence(repo, remoteName);
 }

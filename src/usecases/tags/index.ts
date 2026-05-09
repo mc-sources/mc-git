@@ -33,3 +33,10 @@ export async function deleteRemoteTagUseCase(
 ): Promise<void> {
   return repo.deleteRemoteTag(remoteName, tagName);
 }
+
+export async function listRemoteTagsUseCase(
+  repo: IGitRepository,
+  remoteName: string
+): Promise<string[]> {
+  return repo.listRemoteTags(remoteName);
+}

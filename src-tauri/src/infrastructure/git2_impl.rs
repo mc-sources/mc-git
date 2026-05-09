@@ -387,6 +387,10 @@ impl GitRepository for Git2Repository {
         tag::delete_remote_tag(self.repo(), remote_name, tag_name)
     }
 
+    fn list_remote_tags(&self, remote_name: &str) -> Result<Vec<String>> {
+        tag::list_remote_tags(self.repo(), remote_name)
+    }
+
     fn stash_save(
         &self,
         message: Option<&str>,

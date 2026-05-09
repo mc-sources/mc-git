@@ -118,6 +118,7 @@ pub fn run() {
             tag::delete_tag,
             tag::push_tag,
             tag::delete_remote_tag,
+            tag::list_remote_tags,
             // Stash
             stash::stash_save,
             stash::stash_list,

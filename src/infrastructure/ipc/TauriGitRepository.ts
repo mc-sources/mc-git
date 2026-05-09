@@ -606,6 +606,10 @@ export class TauriGitRepository implements IGitRepository {
     return invoke<void>("delete_remote_tag", { remoteName, tagName });
   }
 
+  async listRemoteTags(remoteName: string): Promise<string[]> {
+    return invoke<string[]>("list_remote_tags", { remoteName });
+  }
+
   async stashSave(message: string | null, includeUntracked: boolean, keepIndex: boolean): Promise<string> {
     return invoke<string>("stash_save", { message, includeUntracked, keepIndex });
   }

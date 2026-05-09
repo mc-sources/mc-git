@@ -879,6 +879,10 @@ impl GitRepository for CliGitRepository {
         Err(Self::unsupported("suppression de tag distant"))
     }
 
+    fn list_remote_tags(&self, _remote_name: &str) -> Result<Vec<String>> {
+        Err(Self::unsupported("listing tags distants"))
+    }
+
     fn stash_save(
         &self,
         _message: Option<&str>,

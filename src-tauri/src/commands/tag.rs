@@ -74,3 +74,17 @@ pub fn delete_remote_tag(
         result,
     )
 }
+
+#[tauri::command]
+pub fn list_remote_tags(
+    remote_name: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<Vec<String>> {
+    let result = {
+        let guard = state.lock_repo()?;
+        let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
+        repo.list_remote_tags(&remote_name)
+    };
+    log_result(&app, &format!("list_remote_tags({remote_name})"), result)
+}
