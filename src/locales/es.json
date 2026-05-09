@@ -27,7 +27,14 @@
   },
   "tags": {
     "title": "Etiquetas",
-    "placeholder": "No hay etiquetas para mostrar."
+    "local": "Local ({{count}})",
+    "remote": "Remote ({{count}})",
+    "filterPlaceholder": "Filtrar etiquetas…",
+    "refresh": "Actualizar",
+    "empty": "No hay etiquetas aún. Crea una desde el historial o arriba.",
+    "showInHistory": "Ver en el historial",
+    "annotated": "Anotada",
+    "lightweight": "Ligera"
   },
   "toolbar": {
     "refresh": "Actualizar",

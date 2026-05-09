@@ -27,7 +27,14 @@
   },
   "tags": {
     "title": "Tags",
-    "placeholder": "No tags to display yet."
+    "local": "Local ({{count}})",
+    "remote": "Remote ({{count}})",
+    "filterPlaceholder": "Filter tags…",
+    "refresh": "Refresh",
+    "empty": "No tags yet. Create one from the history or above.",
+    "showInHistory": "Show in history",
+    "annotated": "Annotated",
+    "lightweight": "Light"
   },
   "toolbar": {
     "refresh": "Refresh",
