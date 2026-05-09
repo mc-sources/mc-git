@@ -21,9 +21,10 @@ export async function deleteTagUseCase(repo: IGitRepository, name: string): Prom
 export async function pushTagUseCase(
   repo: IGitRepository,
   remoteName: string,
-  tagName: string
+  tagName: string,
+  force: boolean = false,
 ): Promise<void> {
-  return repo.pushTag(remoteName, tagName);
+  return repo.pushTag(remoteName, tagName, force);
 }
 
 export async function deleteRemoteTagUseCase(

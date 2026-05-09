@@ -4,12 +4,18 @@ import { useTranslation } from "react-i18next";
 import { toast } from "../../store/toastStore";
 import { useGitStore } from "../../store/gitStore";
 import { useUiStore } from "../../store/uiStore";
+import { useAuthStore } from "../../store/authStore";
 import { useGitRepository } from "../../infrastructure/GitRepositoryContext";
 import { useRepoStore } from "../../store/repoStore";
-import { listTagsUseCase, createTagUseCase } from "../../usecases/tags";
+import { listTagsUseCase, createTagUseCase, pushTagUseCase } from "../../usecases/tags";
 import { validateTagName } from "../../usecases/tags/validation";
+import { parseTagRemoteDivergent } from "../../usecases/tags/errors";
+import { listRemotesUseCase } from "../../usecases/remotes";
+import { getDefaultRemoteUseCase } from "../../usecases/config";
+import { parseAuthRequired, parseUnknownHost, parseMitmDetected } from "../../usecases/auth";
 import { TargetRefPicker } from "../molecules/TargetRefPicker";
-import type { TagInfo } from "../../domain/entities";
+import { TagForcePushDialog } from "../molecules/TagForcePushDialog";
+import type { TagInfo, RemoteInfo } from "../../domain/entities";
 
 const HEAD_VALUE = "HEAD";
 
@@ -19,12 +25,27 @@ interface PendingCreate {
   message: string | null;
 }
 
+interface PushMenuState {
+  tag: TagInfo;
+  x: number;
+  y: number;
+}
+
+interface ForcePushDialogState {
+  tag: string;
+  remote: string;
+  remoteOid: string;
+  localOid: string;
+}
+
 export function TagList() {
   const { t } = useTranslation();
   const repo = useGitRepository();
   const { currentRepo } = useRepoStore();
-  const { tags, setTags, branches, remoteTagPresence, bumpLogVersion } = useGitStore();
+  const { tags, setTags, branches, remoteTagPresence, setRemoteTagPresenceForRemote, bumpLogVersion } =
+    useGitStore();
   const { setActiveView, setHighlightedOid, highlightedTagName, setHighlightedTagName } = useUiStore();
+  const { showAuthModal, showTofuModal } = useAuthStore();
 
   const [filter, setFilter] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -37,6 +58,12 @@ export function TagList() {
   const [creating, setCreating] = useState(false);
   const [detachedDialog, setDetachedDialog] = useState<PendingCreate | null>(null);
 
+  const [remotes, setRemotes] = useState<RemoteInfo[]>([]);
+  const [defaultRemote, setDefaultRemote] = useState<string | null>(null);
+  const [pushMenu, setPushMenu] = useState<PushMenuState | null>(null);
+  const [pushing, setPushing] = useState<{ tag: string; remote: string } | null>(null);
+  const [forcePushDialog, setForcePushDialog] = useState<ForcePushDialogState | null>(null);
+
   const refresh = async () => {
     setRefreshing(true);
     try {
@@ -48,8 +75,22 @@ export function TagList() {
     }
   };
 
+  const refreshRemotes = async () => {
+    try {
+      setRemotes(await listRemotesUseCase(repo));
+    } catch {
+      // non-fatal — la TagList reste utilisable même sans remotes
+    }
+    try {
+      setDefaultRemote(await getDefaultRemoteUseCase(repo));
+    } catch {
+      setDefaultRemote(null);
+    }
+  };
+
   useEffect(() => {
     refresh();
+    refreshRemotes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRepo?.path]);
 
@@ -125,6 +166,56 @@ export function TagList() {
     await performCreate(pending);
   };
 
+  const updateRemoteTagCache = (remoteName: string, tagName: string) => {
+    const current = remoteTagPresence.get(remoteName);
+    const next = new Set(current ?? []);
+    next.add(tagName);
+    setRemoteTagPresenceForRemote(remoteName, Array.from(next));
+  };
+
+  const performPush = async (tagName: string, remoteName: string, force: boolean) => {
+    setPushing({ tag: tagName, remote: remoteName });
+    try {
+      await pushTagUseCase(repo, remoteName, tagName, force);
+      toast.success(
+        t(force ? "tags.push.forceDone" : "tags.push.done", {
+          tag: tagName,
+          remote: remoteName,
+        }),
+      );
+      updateRemoteTagCache(remoteName, tagName);
+      setForcePushDialog(null);
+    } catch (err) {
+      const errStr = String(err);
+      const divergent = parseTagRemoteDivergent(errStr);
+      if (divergent) {
+        setForcePushDialog({
+          tag: divergent.tag,
+          remote: divergent.remote,
+          remoteOid: divergent.remoteOid,
+          localOid: divergent.localOid,
+        });
+        return;
+      }
+      const authHost = parseAuthRequired(errStr);
+      const unknownHost = parseUnknownHost(errStr);
+      const mitm = parseMitmDetected(errStr);
+      if (authHost) {
+        showAuthModal(authHost);
+      } else if (unknownHost) {
+        showTofuModal(unknownHost.host, unknownHost.fingerprint, () =>
+          performPush(tagName, remoteName, force),
+        );
+      } else if (mitm) {
+        toast.error(t("sshTofu.mitmWarning", { host: mitm.host, fingerprint: mitm.fingerprint }));
+      } else {
+        toast.error(t("tags.push.failed", { tag: tagName, remote: remoteName, error: errStr }));
+      }
+    } finally {
+      setPushing(null);
+    }
+  };
+
   const filterLower = filter.toLowerCase();
   const localTags = tags.filter(
     (tag) => filterLower === "" || tag.name.toLowerCase().includes(filterLower),
@@ -150,6 +241,7 @@ export function TagList() {
       tag.isAnnotated && tag.tagger
         ? `${tag.tagger.name} — ${new Date(tag.tagger.when * 1000).toLocaleString()}`
         : undefined;
+    const isPushingThis = pushing?.tag === tag.name;
 
     return (
       <div
@@ -182,6 +274,29 @@ export function TagList() {
         )}
         <span className="flex-1" />
         <button
+          title={
+            remotes.length === 0
+              ? t("tags.push.noRemote")
+              : t("tags.menu.pushTo")
+          }
+          disabled={remotes.length === 0 || isPushingThis}
+          onClick={(e) => {
+            e.stopPropagation();
+            const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+            setPushMenu({ tag, x: rect.right, y: rect.bottom });
+          }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-text-muted hover:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          {isPushingThis ? (
+            <span className="w-3 h-3 rounded-full border-2 border-blue-400/40 border-t-blue-400 animate-spin inline-block" />
+          ) : (
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+              <path d="M8 4v8M5 7l3-3 3 3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M3 13h10" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+        <button
           title={t("tags.showInHistory")}
           onClick={() => handleNavigateToCommit(tag.targetOid)}
           className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-text-muted hover:text-blue-400"
@@ -197,7 +312,7 @@ export function TagList() {
   const showInvalidName = name.length > 0 && !nameValidation.ok;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" onClick={() => setPushMenu(null)}>
       <div className="flex items-center gap-2 px-4 py-3 border-b border-surface-border shrink-0">
         <h2 className="text-sm font-semibold text-text-primary flex-1">{t("tags.title")}</h2>
         <button
@@ -289,6 +404,42 @@ export function TagList() {
         )}
       </div>
 
+      {pushMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setPushMenu(null)} />
+          <div
+            style={{ top: pushMenu.y + 4, left: Math.max(8, pushMenu.x - 200) }}
+            className="fixed z-50 bg-surface-elevated border border-surface-border rounded-lg shadow-2xl py-1 min-w-52 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-[10px] text-text-muted uppercase tracking-widest px-3 py-1.5 font-medium">
+              {t("tags.menu.pushTo")}
+            </p>
+            {remotes.map((r) => {
+              const isDefault = r.name === defaultRemote;
+              return (
+                <button
+                  key={r.name}
+                  onClick={() => {
+                    const tagName = pushMenu.tag.name;
+                    setPushMenu(null);
+                    performPush(tagName, r.name, false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-text-primary hover:bg-surface-hover transition-colors flex items-center gap-2"
+                >
+                  <span className="flex-1">{r.name}</span>
+                  {isDefault && (
+                    <span className="text-[9px] uppercase tracking-wide text-blue-400 font-semibold">
+                      {t("tags.push.default")}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
       {detachedDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-surface-elevated border border-surface-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-5 flex flex-col gap-4">
@@ -331,6 +482,18 @@ export function TagList() {
             </div>
           </div>
         </div>
+      )}
+
+      {forcePushDialog && (
+        <TagForcePushDialog
+          tag={forcePushDialog.tag}
+          remote={forcePushDialog.remote}
+          remoteOid={forcePushDialog.remoteOid}
+          localOid={forcePushDialog.localOid}
+          loading={pushing?.tag === forcePushDialog.tag && pushing?.remote === forcePushDialog.remote}
+          onClose={() => setForcePushDialog(null)}
+          onConfirm={() => performPush(forcePushDialog.tag, forcePushDialog.remote, true)}
+        />
       )}
     </div>
   );

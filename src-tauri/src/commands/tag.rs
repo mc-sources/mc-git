@@ -45,15 +45,20 @@ pub fn delete_tag(name: String, app: AppHandle, state: State<AppState>) -> Resul
 pub fn push_tag(
     remote_name: String,
     tag_name: String,
+    force: bool,
     app: AppHandle,
     state: State<AppState>,
 ) -> Result<()> {
     let result = {
         let guard = state.lock_repo()?;
         let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
-        repo.push_tag(&remote_name, &tag_name)
+        repo.push_tag(&remote_name, &tag_name, force)
     };
-    log_result(&app, &format!("push_tag({remote_name}/{tag_name})"), result)
+    log_result(
+        &app,
+        &format!("push_tag({remote_name}/{tag_name}, force={force})"),
+        result,
+    )
 }
 
 #[tauri::command]

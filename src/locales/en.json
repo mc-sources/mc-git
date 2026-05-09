@@ -58,6 +58,23 @@
         "body": "You are on a detached commit (HEAD does not point to a branch).\n\nCreating a tag here is allowed, but it will point to a commit that may become orphaned if you switch branch without tracking it. Confirm if this is intentional.",
         "confirm": "Create anyway"
       }
+    },
+    "menu": {
+      "pushTo": "Push to"
+    },
+    "push": {
+      "default": "default",
+      "noRemote": "No remote configured",
+      "done": "Tag \"{{tag}}\" pushed to {{remote}}.",
+      "forceDone": "Tag \"{{tag}}\" force-pushed to {{remote}}.",
+      "failed": "Push of {{tag}} → {{remote}} failed: {{error}}"
+    },
+    "forcePush": {
+      "title": "⚠ Divergent — {{tag}} on {{remote}}",
+      "body": "Tag {{tag}} already exists on {{remote}} but points to a different commit.\n\nOverwriting it will invalidate this tag for ALL other collaborators who fetched it. This action is irreversible on the remote.",
+      "checkbox": "I understand that this action will overwrite the remote tag and that it is irreversible.",
+      "confirm": "Force push",
+      "cancel": "Cancel"
     }
   },
   "targetRefPicker": {

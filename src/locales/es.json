@@ -58,6 +58,23 @@
         "body": "Estás en un commit desvinculado (HEAD no apunta a una rama).\n\nCrear una etiqueta aquí es posible, pero apuntará a un commit que podría quedar huérfano si cambias de rama sin rastrearlo. Confirma si es intencional.",
         "confirm": "Crear de todos modos"
       }
+    },
+    "menu": {
+      "pushTo": "Enviar a"
+    },
+    "push": {
+      "default": "predeterminado",
+      "noRemote": "Ningún remoto configurado",
+      "done": "Etiqueta «{{tag}}» enviada a {{remote}}.",
+      "forceDone": "Etiqueta «{{tag}}» enviada con fuerza a {{remote}}.",
+      "failed": "Envío de {{tag}} → {{remote}} fallido: {{error}}"
+    },
+    "forcePush": {
+      "title": "⚠ Divergente — {{tag}} en {{remote}}",
+      "body": "La etiqueta {{tag}} ya existe en {{remote}} pero apunta a un commit diferente.\n\nSobrescribirla invalidará esta etiqueta para TODOS los demás colaboradores que la recuperaron. Esta acción es irreversible en el remoto.",
+      "checkbox": "Entiendo que esta acción sobrescribirá la etiqueta remota y que es irreversible.",
+      "confirm": "Forzar envío",
+      "cancel": "Cancelar"
     }
   },
   "targetRefPicker": {

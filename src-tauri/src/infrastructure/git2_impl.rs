@@ -379,8 +379,8 @@ impl GitRepository for Git2Repository {
         tag::delete_tag(self.repo(), name)
     }
 
-    fn push_tag(&self, remote_name: &str, tag_name: &str) -> Result<()> {
-        tag::push_tag(self.repo(), remote_name, tag_name)
+    fn push_tag(&self, remote_name: &str, tag_name: &str, force: bool) -> Result<()> {
+        tag::push_tag(self.repo(), remote_name, tag_name, force)
     }
 
     fn delete_remote_tag(&self, remote_name: &str, tag_name: &str) -> Result<()> {

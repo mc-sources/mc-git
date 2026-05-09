@@ -871,7 +871,7 @@ impl GitRepository for CliGitRepository {
         Err(Self::unsupported("suppression de tag"))
     }
 
-    fn push_tag(&self, _remote_name: &str, _tag_name: &str) -> Result<()> {
+    fn push_tag(&self, _remote_name: &str, _tag_name: &str, _force: bool) -> Result<()> {
         Err(Self::unsupported("push de tag"))
     }
 
