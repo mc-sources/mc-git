@@ -598,8 +598,8 @@ export class TauriGitRepository implements IGitRepository {
     return invoke<void>("delete_tag", { name });
   }
 
-  async pushTag(remoteName: string, tagName: string): Promise<void> {
-    return invoke<void>("push_tag", { remoteName, tagName });
+  async pushTag(remoteName: string, tagName: string, force: boolean): Promise<void> {
+    return invoke<void>("push_tag", { remoteName, tagName, force });
   }
 
   async deleteRemoteTag(remoteName: string, tagName: string): Promise<void> {

@@ -10,6 +10,25 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.4.0] — 2026-05-09
+
+### Added
+
+- **Push d'un tag depuis la `TagList`** : nouveau bouton « ↑ » au survol de chaque tag local, à côté du bouton « Voir dans l'historique ». Le clic ouvre un sous-menu listant tous les remotes configurés (avec badge `défaut` sur le remote par défaut). Le clic sur un remote pousse le tag via la commande Tauri `push_tag`. Toast de succès localisé + mise à jour automatique du cache `gitStore.remoteTagPresence` (le tag apparaît immédiatement comme présent sur le remote concerné). Avec cette fonctionnalité, l'objectif EPIC-0004 « tagger une release Mc-Git ≥ 0.1.7 depuis l'UI Mc-Git et la pousser sans CLI » est désormais atteint sans CLI.
+- **Détection de divergence et force-push protégé** : lorsque le tag existe déjà sur le remote pointant vers un commit différent, le backend Rust pré-vérifie via `Remote::list()` (ou ouverture directe pour `file://`) et retourne le nouveau variant typé `AppError::TagRemoteDivergent { remote, tag, remote_oid, local_oid }`. Le frontend décode l'erreur (helper `parseTagRemoteDivergent` dans `usecases/tags/errors.ts`) et ouvre le composant `TagForcePushDialog` (rouge intense, OIDs local/remote affichés en colonnes, checkbox de reconnaissance obligatoire avant que le bouton « Forcer le push » devienne cliquable).
+- **Backend Rust `push_tag(remote_name, tag_name, force)`** : signature étendue avec `force: bool`. Si `force=false`, pré-check de divergence ; si `force=true`, refspec préfixé `+` pour overwrite remote. Pré-check hybride : ouverture directe du repo bare pour les remotes `file://` (rapide, contourne un bug de récursion `connect_auth+list` de libgit2 0.19), `Remote::connect_auth + list` pour https/ssh.
+- **4 nouveaux tests Rust** dans `git/tag.rs` : push standard sur tag absent du remote, push idempotent (même OID local et remote), détection de divergence (assertion sur les 4 champs du variant), force-push qui écrase un remote divergent.
+- **Auth/TOFU/MITM** sur le push : réutilisation des helpers `parseAuthRequired` / `parseUnknownHost` / `parseMitmDetected` (calque `RemotePanel`). Échec d'authentification ouvre `AuthModal`, hôte inconnu ouvre `SshTofuModal` avec retry câblé, MITM affiche un toast d'avertissement.
+- **i18n FR/EN/ES** : nouvelles clés `tags.menu.pushTo`, `tags.push.{default,noRemote,done,forceDone,failed}`, `tags.forcePush.{title,body,checkbox,confirm,cancel}`.
+
+### Notes
+
+Cette US livre **sans dépendance** sur US-0014 (delete local) et US-0016 (indicateur multi-remotes), volontairement non bloquantes pour atteindre l'objectif EPIC-0004 le plus tôt possible. Le bouton « Push » sera intégré au menu contextuel quand US-0014 livrera celui-ci ; le bouton « Pousser sur les remotes manquants » du popover multi-remotes (REQ-TAG-G19/G20) sera activé quand US-0016 livrera ce popover.
+
+Bump minor (`0.3.0 → 0.4.0`).
+
+---
+
 ## [0.3.0] — 2026-05-09
 
 ### Added

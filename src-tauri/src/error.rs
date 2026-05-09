@@ -17,6 +17,14 @@ pub enum AppError {
 
     #[error("BranchNotFullyMerged")]
     BranchNotFullyMerged,
+
+    #[error("TagRemoteDivergent: remote={remote} tag={tag} remote_oid={remote_oid} local_oid={local_oid}")]
+    TagRemoteDivergent {
+        remote: String,
+        tag: String,
+        remote_oid: String,
+        local_oid: String,
+    },
 }
 
 // Tauri commands must return serializable errors

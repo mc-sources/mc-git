@@ -58,6 +58,23 @@
         "body": "Vous êtes sur un commit détaché (HEAD ne pointe pas sur une branche).\n\nCréer un tag ici reste possible, mais le tag pointera sur un commit susceptible de devenir orphelin si vous changez de branche sans le suivre. Confirmez si c'est intentionnel.",
         "confirm": "Créer quand même"
       }
+    },
+    "menu": {
+      "pushTo": "Pousser vers"
+    },
+    "push": {
+      "default": "défaut",
+      "noRemote": "Aucun remote configuré",
+      "done": "Tag « {{tag}} » poussé sur {{remote}}.",
+      "forceDone": "Tag « {{tag}} » force-poussé sur {{remote}}.",
+      "failed": "Push de {{tag}} → {{remote}} échoué : {{error}}"
+    },
+    "forcePush": {
+      "title": "⚠ Divergence — {{tag}} sur {{remote}}",
+      "body": "Le tag {{tag}} existe déjà sur {{remote}} mais pointe vers un commit différent.\n\nL'écraser invalidera ce tag pour TOUS les autres collaborateurs qui l'auraient récupéré. Cette action est irréversible côté remote.",
+      "checkbox": "Je comprends que cette action écrasera le tag distant et qu'elle est irréversible.",
+      "confirm": "Forcer le push",
+      "cancel": "Annuler"
     }
   },
   "targetRefPicker": {

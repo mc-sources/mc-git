@@ -125,7 +125,7 @@ export interface IGitRepository {
   listTags(): Promise<TagInfo[]>;
   createTag(name: string, targetOid: string, message: string | null): Promise<TagInfo>;
   deleteTag(name: string): Promise<void>;
-  pushTag(remoteName: string, tagName: string): Promise<void>;
+  pushTag(remoteName: string, tagName: string, force: boolean): Promise<void>;
   deleteRemoteTag(remoteName: string, tagName: string): Promise<void>;
   listRemoteTags(remoteName: string): Promise<string[]>;
 

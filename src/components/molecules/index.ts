@@ -5,3 +5,4 @@ export * from "./DiffLineRow";
 export * from "./HunkView";
 export * from "./MiniDiff";
 export * from "./TargetRefPicker";
+export * from "./TagForcePushDialog";
