@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.4.1] — 2026-05-10
+
+### Changed
+
+- `cargo fmt --all` appliqué sur `src-tauri/src/git/tag.rs` après l'introduction de `push_tag(force)` en 0.4.0. Signature `push_tag(repo, remote_name, tag_name, force)` repliée sur une seule ligne, et `vec![...]` du test `list_remote_tags_returns_sorted_unique` (dérive pré-existante 0.1.7) replié en multi-ligne — release `chore` uniquement, aucun changement fonctionnel. Détection : `cargo fmt --all --check` en CI.
+
+---
+
 ## [0.4.0] — 2026-05-09
 
 ### Added

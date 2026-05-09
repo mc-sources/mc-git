@@ -145,12 +145,7 @@ fn remote_tag_commit_oid(
 /// Si `force = true`, le pré-check est skippé et le push est fait avec un
 /// refspec préfixé `+` (overwrite remote ref). C'est l'utilisateur qui assume,
 /// après avoir confirmé via le dialog UI dédié.
-pub fn push_tag(
-    repo: &Repository,
-    remote_name: &str,
-    tag_name: &str,
-    force: bool,
-) -> Result<()> {
+pub fn push_tag(repo: &Repository, remote_name: &str, tag_name: &str, force: bool) -> Result<()> {
     if !force {
         // Pré-check de divergence : on compare le commit ciblé localement et
         // distantement. Si le remote est `file://`, on inspecte le bare repo
@@ -340,7 +335,11 @@ mod tests {
 
         assert_eq!(
             tags,
-            vec!["v0.1.0".to_string(), "v0.2.0".to_string(), "v0.3.0".to_string()]
+            vec![
+                "v0.1.0".to_string(),
+                "v0.2.0".to_string(),
+                "v0.3.0".to_string()
+            ]
         );
     }
 
