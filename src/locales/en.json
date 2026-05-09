@@ -19,10 +19,15 @@
     "changes": "Changes",
     "history": "History",
     "branches": "Branches",
+    "tags": "Tags",
     "remotes": "Remotes",
     "reflog": "Reflog",
     "settings": "Settings",
     "submodules": "Submodules"
+  },
+  "tags": {
+    "title": "Tags",
+    "placeholder": "No tags to display yet."
   },
   "toolbar": {
     "refresh": "Refresh",

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { loadPref } from "../utils/localStorage";
 import type { CommitDetail, FileDiff, ProgressEvent, RepositoryState } from "../domain/entities";
 
-export type ActiveView = "changes" | "history" | "branches" | "remotes" | "submodules" | "settings" | "blame" | "reflog";
+export type ActiveView = "changes" | "history" | "branches" | "tags" | "remotes" | "submodules" | "settings" | "blame" | "reflog";
 
 export type DiffMode = "unified" | "split";
 
@@ -42,6 +42,9 @@ interface UiStore {
 
   highlightedOid: string | null;
   setHighlightedOid: (oid: string | null) => void;
+
+  highlightedTagName: string | null;
+  setHighlightedTagName: (name: string | null) => void;
 
   // Diff display preferences (persisted)
   diffMode: DiffMode;
@@ -100,6 +103,9 @@ export const useUiStore = create<UiStore>((set) => ({
   highlightedOid: null,
   setHighlightedOid: (highlightedOid) => set({ highlightedOid }),
 
+  highlightedTagName: null,
+  setHighlightedTagName: (highlightedTagName) => set({ highlightedTagName }),
+
   interactiveRebaseFromOid: null,
   setInteractiveRebaseFromOid: (interactiveRebaseFromOid) => set({ interactiveRebaseFromOid }),
 
@@ -130,6 +136,7 @@ export const useUiStore = create<UiStore>((set) => ({
       blameTarget: null,
       progress: null,
       highlightedOid: null,
+      highlightedTagName: null,
       interactiveRebaseFromOid: null,
     }),
 
@@ -162,6 +169,7 @@ export const useUiStore = create<UiStore>((set) => ({
         blameTarget: null,
         progress: null,
         highlightedOid: null,
+        highlightedTagName: null,
         interactiveRebaseFromOid: null,
       };
     }),

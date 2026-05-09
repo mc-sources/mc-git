@@ -2,13 +2,14 @@ import { useTranslation } from "react-i18next";
 import { useRepoStore } from "../../store/repoStore";
 import { useUiStore, type ActiveView } from "../../store/uiStore";
 import { useGitStore } from "../../store/gitStore";
-import { IconChanges, IconHistory, IconBranch, IconRemote, IconGit, IconSettings, IconReflog, IconSubmodule } from "../atoms/icons";
+import { IconChanges, IconHistory, IconBranch, IconRemote, IconGit, IconSettings, IconReflog, IconSubmodule, IconTag } from "../atoms/icons";
 import { AppVersion } from "../atoms/AppVersion";
 
 const NAV_IDS: { id: ActiveView; key: string; Icon: React.FC<{ className?: string }> }[] = [
   { id: "changes",  key: "sidebar.changes",  Icon: IconChanges },
   { id: "history",  key: "sidebar.history",  Icon: IconHistory },
   { id: "branches", key: "sidebar.branches", Icon: IconBranch  },
+  { id: "tags",         key: "sidebar.tags",        Icon: IconTag       },
   { id: "remotes",      key: "sidebar.remotes",     Icon: IconRemote    },
   { id: "submodules",  key: "sidebar.submodules",  Icon: IconSubmodule },
   { id: "reflog",      key: "sidebar.reflog",      Icon: IconReflog    },
