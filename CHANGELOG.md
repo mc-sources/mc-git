@@ -10,6 +10,21 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.2.0] — 2026-05-09
+
+### Added
+
+- **Listing local des tags dans la vue `Tags`** : la `TagList` affiche désormais tous les tags locaux du dépôt, regroupés en section `LOCAL (n)`. Chaque entrée présente le nom du tag, l'OID court (7 caractères) du commit ciblé, un badge `Annoté` (bleu) ou `Light` (ambre), et au survol un bouton « Voir dans l'historique » qui bascule sur l'onglet History et met en évidence le commit. Pour les tags annotés, le badge expose en tooltip le nom du tagger et la date locale formatée (`Signature.when` × 1000).
+- **Filtre texte** au-dessus de la liste, case-insensitive sur le nom du tag, avec compteur dynamique sur la section `LOCAL`. Bouton clear (`✕`) à droite quand un filtre est actif.
+- **Bouton « Actualiser »** dans l'en-tête de la `TagList` : recharge la liste via `listTagsUseCase` (idempotent — alimente le même `gitStore.tags` que celui consommé par `CommitList`). Refresh automatique au montage et à chaque changement de `currentRepo.path`.
+- **Highlight depuis `setHighlightedTagName`** : si la valeur du store correspond au nom d'un tag affiché, la ligne reçoit un ring bleu et est auto-scrollée dans la viewport (`scrollIntoView({ block: "nearest" })`). Expiration automatique après 3 secondes via `setHighlightedTagName(null)` (préparation US-0020 — navigation depuis `CommitRow`).
+- **Section `REMOTE (n)`** : affichée uniquement quand `gitStore.remoteTagPresence` est non vide. Pour cette version, seul le compteur est exposé — la liste détaillée et l'indicateur multi-remotes par tag arriveront dans les US suivantes (US-0016).
+- **Clés i18n** ajoutées dans FR/EN/ES : `tags.local`, `tags.remote`, `tags.filterPlaceholder`, `tags.refresh`, `tags.empty`, `tags.showInHistory`, `tags.annotated`, `tags.lightweight`. La clé `tags.placeholder` (US-0011) est retirée — remplacée par `tags.empty` qui est conditionnel à `localTags.length === 0`.
+
+Première US à valeur utilisateur visible de FEAT-0145 — la vue Tags devient consultable. Création, suppression et opérations remote arrivent dans les US suivantes (US-0013, US-0014, US-0017+).
+
+---
+
 ## [0.1.8] — 2026-05-09
 
 ### Added
