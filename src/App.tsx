@@ -12,6 +12,7 @@ import { AppShell } from "./components/templates/AppShell";
 import { LogPanel } from "./components/organisms/LogPanel";
 import { Toaster } from "./components/organisms/Toaster";
 import { BranchList } from "./components/organisms/BranchList";
+import { TagList } from "./components/organisms/TagList";
 import { RemotePanel } from "./components/organisms/RemotePanel";
 import { SubmodulePanel } from "./components/organisms/SubmodulePanel";
 import { WelcomeScreen } from "./components/pages/WelcomeScreen";
@@ -33,6 +34,7 @@ function MainContent() {
     case "changes":    return easyMode ? <EasyChangesView /> : <ChangesView />;
     case "history":    return easyMode ? <EasyHistoryView /> : <HistoryView />;
     case "branches":   return <BranchList />;
+    case "tags":       return <TagList />;
     case "remotes":    return <RemotePanel />;
     case "submodules": return <SubmodulePanel />;
     case "settings":   return <SettingsView />;

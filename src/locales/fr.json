@@ -19,10 +19,15 @@
     "changes": "Changes",
     "history": "History",
     "branches": "Branches",
+    "tags": "Tags",
     "remotes": "Remotes",
     "reflog": "Reflog",
     "settings": "Paramètres",
     "submodules": "Sous-modules"
+  },
+  "tags": {
+    "title": "Tags",
+    "placeholder": "Aucun tag à afficher pour le moment."
   },
   "toolbar": {
     "refresh": "Actualiser",

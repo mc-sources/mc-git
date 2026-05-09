@@ -19,10 +19,15 @@
     "changes": "Cambios",
     "history": "Historial",
     "branches": "Ramas",
+    "tags": "Etiquetas",
     "remotes": "Remotos",
     "reflog": "Reflog",
     "settings": "Ajustes",
     "submodules": "Submódulos"
+  },
+  "tags": {
+    "title": "Etiquetas",
+    "placeholder": "No hay etiquetas para mostrar."
   },
   "toolbar": {
     "refresh": "Actualizar",

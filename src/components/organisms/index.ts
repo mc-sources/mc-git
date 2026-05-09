@@ -4,6 +4,7 @@ export * from "./DiffViewer";
 export * from "./CommitList";
 export * from "./CommitDetailPanel";
 export * from "./BranchList";
+export * from "./TagList";
 export * from "./RemotePanel";
 export * from "./LogPanel";
 export * from "./Toaster";

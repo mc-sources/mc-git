@@ -10,6 +10,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.1.8] — 2026-05-09
+
+### Added
+
+- **Entrée `Tags` dans la sidebar** : nouveau point d'entrée navigationnel inséré entre `Branches` et `Remotes`, ouvrant une vue plein-écran `TagList` (skeleton). La vue affiche pour le moment un titre et un placeholder « Aucun tag à afficher pour le moment. » — les opérations (listing, création, push, suppression) seront livrées dans les US suivantes de FEAT-0145.
+- **Store `uiStore.highlightedTagName`** : nouveau champ `string | null` (initial `null`) avec setter `setHighlightedTagName`, intégré aux opérations `reset` et `resetAndRestore`. Préparé pour la navigation depuis `CommitRow` vers la TagList (consommation en US-0012/US-0020).
+- **i18n** : clés `sidebar.tags`, `tags.title`, `tags.placeholder` ajoutées dans les locales FR, EN et ES.
+
+Coquille du chantier FEAT-0145 (gestion des tags Mc-Git). Pas de logique métier dans cette version — uniquement le point d'ancrage UI sur lequel les US suivantes greffent leur contenu.
+
+---
+
 ## [0.1.7] — 2026-05-09
 
 ### Added
