@@ -34,7 +34,38 @@
     "empty": "Aucun tag pour le moment. Créez-en un depuis l'historique ou ci-dessus.",
     "showInHistory": "Voir dans l'historique",
     "annotated": "Annoté",
-    "lightweight": "Light"
+    "lightweight": "Light",
+    "create": {
+      "namePlaceholder": "Nom du tag…",
+      "annotated": "Annoté",
+      "messagePlaceholder": "Message du tag (annoté)",
+      "button": "Créer",
+      "creating": "Création…",
+      "done": "Tag « {{name}} » créé.",
+      "failed": "Création échouée : {{error}}",
+      "alreadyExists": "Le tag « {{name}} » existe déjà localement.",
+      "invalidTarget": "cible non résolue",
+      "invalidName": {
+        "empty": "Le nom ne peut pas être vide.",
+        "spaces": "Le nom ne peut pas contenir d'espaces.",
+        "dots": "Le nom ne peut pas contenir « .. », « // », « /. » ni « @{ ».",
+        "special": "Caractères interdits : ~ : ^ ? * [ \\.",
+        "startDash": "Le nom ne peut pas commencer par « - ».",
+        "endLock": "Le nom ne peut pas se terminer par « .lock »."
+      },
+      "detachedHead": {
+        "title": "HEAD détachée",
+        "body": "Vous êtes sur un commit détaché (HEAD ne pointe pas sur une branche).\n\nCréer un tag ici reste possible, mais le tag pointera sur un commit susceptible de devenir orphelin si vous changez de branche sans le suivre. Confirmez si c'est intentionnel.",
+        "confirm": "Créer quand même"
+      }
+    }
+  },
+  "targetRefPicker": {
+    "head": "HEAD",
+    "branchLocal": "Branches locales",
+    "branchRemote": "Branches remote",
+    "customOid": "OID personnalisé…",
+    "back": "Retour au sélecteur"
   },
   "toolbar": {
     "refresh": "Actualiser",

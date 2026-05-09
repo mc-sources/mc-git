@@ -4,3 +4,4 @@ export * from "./EntryRow";
 export * from "./DiffLineRow";
 export * from "./HunkView";
 export * from "./MiniDiff";
+export * from "./TargetRefPicker";

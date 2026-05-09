@@ -10,6 +10,22 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.3.0] — 2026-05-09
+
+### Added
+
+- **Création de tag depuis la `TagList`** : nouveau formulaire persistant en tête de la vue Tags. Champs : nom, cible (`HEAD`, branche locale, branche remote, ou OID arbitraire via le nouveau composant `TargetRefPicker`), case « Annoté » (cochée par défaut, conformément à la décision T-0001/T-0002) et zone message visible uniquement quand le tag est annoté. Le bouton « Créer » est désactivé tant que le nom est invalide ou que (annoté && message vide) ou que la création est en cours. Au succès, refresh implicit de la liste + `bumpLogVersion` pour rafraîchir l'historique.
+- **Composant `TargetRefPicker`** (`molecules/`) : sélecteur réutilisable basculant entre un dropdown (HEAD + branches locales + branches remote + entrée « OID personnalisé… ») et un mode texte libre 40 caractères avec bouton retour `←`. Mutualisable hors tags pour de futures opérations type checkout-by-OID.
+- **Validation regex frontend du nom de tag** (`usecases/tags/validation.ts`) : refuse vide, espaces, début par `-`, fin par `.lock`, séquences `..` `//` `/.` `@{`, et caractères spéciaux `~:^?*[\`. La raison est exposée comme clé i18n (`empty` / `spaces` / `dots` / `special` / `startDash` / `endLock`) et affichée en rouge sous le champ nom dès que celui-ci est non vide et invalide. Le backend libgit2 reste en filet pour les cas non couverts.
+- **Dialog pédagogique HEAD détachée** : si l'utilisateur tente de créer un tag sur `HEAD` alors qu'aucune branche locale n'a `isHead`, un dialog bloquant explique le risque (commit potentiellement orphelin) et propose « Créer quand même » / « Annuler ». L'annulation reset le formulaire.
+- **Gestion erreur typée `TagAlreadyExistsLocal`** : parsing de la chaîne d'erreur (`"already exists"` ou variant `TagAlreadyExistsLocal` à venir) → toast localisé `tags.create.alreadyExists`. Sinon toast brut `tags.create.failed`.
+- **Default annoté pour `TagCreateDialog`** (utilisé depuis `CommitRow`) : `useState(true)` au lieu de `useState(false)`. Aligne sur la décision T-0001/T-0002.
+- **i18n FR/EN/ES** : nouvelles clés `tags.create.*` (placeholders, boutons, raisons d'invalidité, dialog detached) et `targetRefPicker.*` (head, branchLocal, branchRemote, customOid, back).
+
+Bump minor (`0.2.0 → 0.3.0`). Le chemin de création principal de FEAT-0145 est désormais opérationnel — couvre l'objectif EPIC-0004 « tagger une release depuis l'UI ». Suppression locale et opérations remote arrivent dans US-0014, US-0017+.
+
+---
+
 ## [0.2.0] — 2026-05-09
 
 ### Added

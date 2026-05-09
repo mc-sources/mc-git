@@ -34,7 +34,38 @@
     "empty": "No tags yet. Create one from the history or above.",
     "showInHistory": "Show in history",
     "annotated": "Annotated",
-    "lightweight": "Light"
+    "lightweight": "Light",
+    "create": {
+      "namePlaceholder": "Tag name…",
+      "annotated": "Annotated",
+      "messagePlaceholder": "Tag message (annotated)",
+      "button": "Create",
+      "creating": "Creating…",
+      "done": "Tag \"{{name}}\" created.",
+      "failed": "Create failed: {{error}}",
+      "alreadyExists": "Tag \"{{name}}\" already exists locally.",
+      "invalidTarget": "target could not be resolved",
+      "invalidName": {
+        "empty": "Name cannot be empty.",
+        "spaces": "Name cannot contain whitespace.",
+        "dots": "Name cannot contain \"..\", \"//\", \"/.\" or \"@{\".",
+        "special": "Forbidden characters: ~ : ^ ? * [ \\.",
+        "startDash": "Name cannot start with \"-\".",
+        "endLock": "Name cannot end with \".lock\"."
+      },
+      "detachedHead": {
+        "title": "Detached HEAD",
+        "body": "You are on a detached commit (HEAD does not point to a branch).\n\nCreating a tag here is allowed, but it will point to a commit that may become orphaned if you switch branch without tracking it. Confirm if this is intentional.",
+        "confirm": "Create anyway"
+      }
+    }
+  },
+  "targetRefPicker": {
+    "head": "HEAD",
+    "branchLocal": "Local branches",
+    "branchRemote": "Remote branches",
+    "customOid": "Custom OID…",
+    "back": "Back to picker"
   },
   "toolbar": {
     "refresh": "Refresh",
