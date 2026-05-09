@@ -34,7 +34,38 @@
     "empty": "No hay etiquetas aún. Crea una desde el historial o arriba.",
     "showInHistory": "Ver en el historial",
     "annotated": "Anotada",
-    "lightweight": "Ligera"
+    "lightweight": "Ligera",
+    "create": {
+      "namePlaceholder": "Nombre de la etiqueta…",
+      "annotated": "Anotada",
+      "messagePlaceholder": "Mensaje de la etiqueta (anotada)",
+      "button": "Crear",
+      "creating": "Creando…",
+      "done": "Etiqueta «{{name}}» creada.",
+      "failed": "Creación fallida: {{error}}",
+      "alreadyExists": "La etiqueta «{{name}}» ya existe localmente.",
+      "invalidTarget": "destino no resuelto",
+      "invalidName": {
+        "empty": "El nombre no puede estar vacío.",
+        "spaces": "El nombre no puede contener espacios.",
+        "dots": "El nombre no puede contener «..», «//», «/.» ni «@{».",
+        "special": "Caracteres prohibidos: ~ : ^ ? * [ \\.",
+        "startDash": "El nombre no puede empezar por «-».",
+        "endLock": "El nombre no puede terminar en «.lock»."
+      },
+      "detachedHead": {
+        "title": "HEAD desvinculada",
+        "body": "Estás en un commit desvinculado (HEAD no apunta a una rama).\n\nCrear una etiqueta aquí es posible, pero apuntará a un commit que podría quedar huérfano si cambias de rama sin rastrearlo. Confirma si es intencional.",
+        "confirm": "Crear de todos modos"
+      }
+    }
+  },
+  "targetRefPicker": {
+    "head": "HEAD",
+    "branchLocal": "Ramas locales",
+    "branchRemote": "Ramas remote",
+    "customOid": "OID personalizado…",
+    "back": "Volver al selector"
   },
   "toolbar": {
     "refresh": "Actualizar",

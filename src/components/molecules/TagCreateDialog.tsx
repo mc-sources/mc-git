@@ -13,7 +13,7 @@ export function TagCreateDialog({ headOid, targetOidReadOnly = false, onClose, o
   const { t } = useTranslation();
   const [name, setName] = useState("");
   const [targetOid, setTargetOid] = useState(headOid);
-  const [annotated, setAnnotated] = useState(false);
+  const [annotated, setAnnotated] = useState(true);
   const [message, setMessage] = useState("");
 
   const canCreate = name.trim().length > 0 && targetOid.trim().length > 0 && (!annotated || message.trim().length > 0);

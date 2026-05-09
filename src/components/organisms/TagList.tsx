@@ -1,23 +1,41 @@
 import { useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "../../store/toastStore";
 import { useGitStore } from "../../store/gitStore";
 import { useUiStore } from "../../store/uiStore";
 import { useGitRepository } from "../../infrastructure/GitRepositoryContext";
 import { useRepoStore } from "../../store/repoStore";
-import { listTagsUseCase } from "../../usecases/tags";
+import { listTagsUseCase, createTagUseCase } from "../../usecases/tags";
+import { validateTagName } from "../../usecases/tags/validation";
+import { TargetRefPicker } from "../molecules/TargetRefPicker";
 import type { TagInfo } from "../../domain/entities";
+
+const HEAD_VALUE = "HEAD";
+
+interface PendingCreate {
+  name: string;
+  targetOid: string;
+  message: string | null;
+}
 
 export function TagList() {
   const { t } = useTranslation();
   const repo = useGitRepository();
   const { currentRepo } = useRepoStore();
-  const { tags, setTags, remoteTagPresence } = useGitStore();
+  const { tags, setTags, branches, remoteTagPresence, bumpLogVersion } = useGitStore();
   const { setActiveView, setHighlightedOid, highlightedTagName, setHighlightedTagName } = useUiStore();
 
   const [filter, setFilter] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const highlightedRowRef = useRef<HTMLDivElement | null>(null);
+
+  const [name, setName] = useState("");
+  const [target, setTarget] = useState(HEAD_VALUE);
+  const [annotated, setAnnotated] = useState(true);
+  const [message, setMessage] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [detachedDialog, setDetachedDialog] = useState<PendingCreate | null>(null);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -44,9 +62,72 @@ export function TagList() {
     return () => clearTimeout(timer);
   }, [highlightedTagName, setHighlightedTagName]);
 
+  const headBranch = branches.find((b) => !b.isRemote && b.isHead) ?? null;
+  const isDetachedHead = headBranch === null;
+
+  const resolveTargetOid = (value: string): string | null => {
+    if (value === HEAD_VALUE) return headBranch?.headOid ?? null;
+    const branch = branches.find((b) => b.name === value);
+    if (branch && branch.headOid) return branch.headOid;
+    return /^[0-9a-fA-F]{40}$/.test(value) ? value : null;
+  };
+
+  const nameValidation = validateTagName(name);
+  const messageValid = !annotated || message.trim().length > 0;
+  const canCreate = nameValidation.ok && messageValid && !creating && target.length > 0;
+
+  const resetForm = () => {
+    setName("");
+    setMessage("");
+    setTarget(HEAD_VALUE);
+  };
+
+  const performCreate = async (pending: PendingCreate) => {
+    setCreating(true);
+    try {
+      await createTagUseCase(repo, pending.name, pending.targetOid, pending.message);
+      toast.success(t("tags.create.done", { name: pending.name }));
+      resetForm();
+      await refresh();
+      bumpLogVersion();
+    } catch (err) {
+      const errStr = String(err);
+      if (
+        errStr.includes("TagAlreadyExistsLocal") ||
+        errStr.toLowerCase().includes("already exists")
+      ) {
+        toast.error(t("tags.create.alreadyExists", { name: pending.name }));
+      } else {
+        toast.error(t("tags.create.failed", { error: errStr }));
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!canCreate) return;
+    const oid = resolveTargetOid(target);
+    if (!oid) {
+      toast.error(t("tags.create.failed", { error: t("tags.create.invalidTarget") }));
+      return;
+    }
+    const pending: PendingCreate = {
+      name: name.trim(),
+      targetOid: oid,
+      message: annotated ? message.trim() : null,
+    };
+    if (isDetachedHead && target === HEAD_VALUE) {
+      setDetachedDialog(pending);
+      return;
+    }
+    await performCreate(pending);
+  };
+
   const filterLower = filter.toLowerCase();
   const localTags = tags.filter(
-    (tag) => filterLower === "" || tag.name.toLowerCase().includes(filterLower)
+    (tag) => filterLower === "" || tag.name.toLowerCase().includes(filterLower),
   );
 
   const remoteTagsHasData = remoteTagPresence.size > 0;
@@ -54,7 +135,7 @@ export function TagList() {
     ? Array.from(
         new Set(Array.from(remoteTagPresence.values()).flatMap((set) => Array.from(set))),
       )
-        .filter((name) => filterLower === "" || name.toLowerCase().includes(filterLower))
+        .filter((tagName) => filterLower === "" || tagName.toLowerCase().includes(filterLower))
         .sort()
     : [];
 
@@ -113,6 +194,8 @@ export function TagList() {
     );
   };
 
+  const showInvalidName = name.length > 0 && !nameValidation.ok;
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-surface-border shrink-0">
@@ -125,6 +208,51 @@ export function TagList() {
           {refreshing ? "…" : t("tags.refresh")}
         </button>
       </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2 p-3 border-b border-surface-border">
+        <div className="flex gap-2 items-stretch">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={creating}
+            placeholder={t("tags.create.namePlaceholder")}
+            className="flex-1 bg-surface-elevated text-text-primary text-sm rounded-md px-3 py-1.5 border border-surface-border focus:outline-none focus:border-blue-500 placeholder:text-text-muted disabled:opacity-50"
+          />
+          <TargetRefPicker value={target} onChange={setTarget} disabled={creating} />
+          <label className="flex items-center gap-1.5 cursor-pointer shrink-0">
+            <input
+              type="checkbox"
+              checked={annotated}
+              onChange={(e) => setAnnotated(e.target.checked)}
+              disabled={creating}
+              className="w-3.5 h-3.5 accent-blue-500"
+            />
+            <span className="text-xs text-text-secondary">{t("tags.create.annotated")}</span>
+          </label>
+          <button
+            type="submit"
+            disabled={!canCreate}
+            className="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 disabled:bg-surface-elevated disabled:text-text-muted text-white rounded-md transition-colors shrink-0"
+          >
+            {creating ? t("tags.create.creating") : t("tags.create.button")}
+          </button>
+        </div>
+        {showInvalidName && (
+          <p className="text-xs text-red-400">
+            {t(`tags.create.invalidName.${nameValidation.reason}`)}
+          </p>
+        )}
+        {annotated && (
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            disabled={creating}
+            rows={3}
+            placeholder={t("tags.create.messagePlaceholder")}
+            className="bg-surface-elevated text-text-primary text-xs rounded-md px-3 py-2 border border-surface-border focus:outline-none focus:border-blue-500 placeholder:text-text-muted resize-none disabled:opacity-50"
+          />
+        )}
+      </form>
 
       <div className="flex gap-1.5 px-2 pt-2 pb-1.5 border-b border-surface-border">
         <input
@@ -160,6 +288,50 @@ export function TagList() {
           </p>
         )}
       </div>
+
+      {detachedDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-surface-elevated border border-surface-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-5 flex flex-col gap-4">
+            <div>
+              <p className="text-sm font-semibold text-text-primary">
+                {t("tags.create.detachedHead.title")}
+              </p>
+              <p className="text-xs text-text-muted mt-0.5 font-mono">
+                {detachedDialog.targetOid.slice(0, 7)}
+              </p>
+            </div>
+            <p className="text-xs text-text-secondary whitespace-pre-line">
+              {t("tags.create.detachedHead.body")}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setDetachedDialog(null);
+                  resetForm();
+                }}
+                disabled={creating}
+                className="px-4 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                onClick={async () => {
+                  const pending = detachedDialog;
+                  setDetachedDialog(null);
+                  await performCreate(pending);
+                }}
+                disabled={creating}
+                className="px-4 py-2 text-sm font-medium bg-amber-600 hover:bg-amber-500 text-white rounded-md transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {creating && (
+                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                )}
+                {t("tags.create.detachedHead.confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
