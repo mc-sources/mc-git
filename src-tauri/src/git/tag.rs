@@ -84,6 +84,26 @@ pub fn delete_tag(repo: &Repository, name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Convertit une URL `file://` en path natif ouvrable par libgit2.
+///
+/// - `file:///tmp/foo` (Unix bien formé) → `/tmp/foo`
+/// - `file:///C:/Users/foo` (Windows bien formé, triple slash + drive letter) →
+///   `C:/Users/foo` (le `/` initial est strippé pour libgit2 Windows)
+/// - `file://C:\Users\foo` (Windows malformé sans triple slash) → `C:\Users\foo`
+///   (traité tel quel, libgit2 acceptera)
+fn parse_file_url(url: &str) -> Option<String> {
+    let rest = url.strip_prefix("file://")?;
+    let mut chars = rest.chars();
+    if rest.starts_with('/')
+        && chars.nth(1).is_some_and(|c| c.is_ascii_alphabetic())
+        && chars.next() == Some(':')
+    {
+        Some(rest[1..].to_string())
+    } else {
+        Some(rest.to_string())
+    }
+}
+
 /// Retourne l'OID du commit ciblé par `refs/tags/{tag_name}` côté remote, ou
 /// `None` si le tag n'existe pas. Stratégie hybride :
 /// - URL `file://` : ouverture directe du repo bare et lecture de la ref ;
@@ -101,8 +121,8 @@ fn remote_tag_commit_oid(
         .map(|s| s.to_string())
         .unwrap_or_default();
 
-    if let Some(path) = url.strip_prefix("file://") {
-        return Ok(match git2::Repository::open(path) {
+    if let Some(path) = parse_file_url(&url) {
+        return Ok(match git2::Repository::open(&path) {
             Ok(remote_repo) => match remote_repo.find_reference(&format!("refs/tags/{tag_name}")) {
                 Ok(r) => r.peel_to_commit().ok().map(|c| c.id().to_string()),
                 Err(_) => None,
@@ -275,8 +295,22 @@ mod tests {
         tmp
     }
 
+    /// Construit une URL `file://` portable Unix/Windows.
+    ///
+    /// - Unix : `/tmp/foo` → `file:///tmp/foo`
+    /// - Windows : `C:\Users\foo` → `file:///C:/Users/foo` (backslashes
+    ///   convertis en forward slashes, triple slash devant la drive letter).
+    fn path_to_file_url(path: &std::path::Path) -> String {
+        let path_str = path.display().to_string().replace('\\', "/");
+        if path_str.starts_with('/') {
+            format!("file://{path_str}")
+        } else {
+            format!("file:///{path_str}")
+        }
+    }
+
     fn file_url(tmp: &TempDir) -> String {
-        format!("file://{}", tmp.path().display())
+        path_to_file_url(tmp.path())
     }
 
     #[test]
@@ -365,7 +399,7 @@ mod tests {
         }
 
         local_repo
-            .remote("origin", &format!("file://{}", bare_path.display()))
+            .remote("origin", &path_to_file_url(&bare_path))
             .unwrap();
 
         (local_tmp, bare_tmp, local_repo)

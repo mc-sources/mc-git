@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.4.2] — 2026-05-12
+
+### Fixed
+
+- **`cargo test` Windows CI** : les tests `git::tag::push_tag_*` et `git::tag::list_remote_tags_*` échouaient sur la matrice Windows depuis 0.4.0 avec `failed to resolve path 'file://C:\Users\RUNNER~1\...'`. Les helpers de test (`file_url`, `setup_local_with_bare_remote`) construisaient une URL `file://` en concaténant naïvement le path natif, ce qui produit un format invalide sur Windows (`file://C:\...` au lieu du `file:///C:/...` attendu par la spec). Nouveau helper test `path_to_file_url(&Path)` qui convertit les backslashes en forward slashes et préfixe avec triple slash si une drive letter est présente. Symétriquement, en production, `remote_tag_commit_oid` utilise désormais `parse_file_url(&str)` qui strippe le `/` initial de `/C:/Users/...` avant l'appel à `Repository::open` (libgit2 sur Windows accepte les paths natifs `C:/...`). Détection : 1ʳᵉ run réelle du workflow `release.yml` sur le tag `v0.4.1` (8 tests `git::tag` ont planté sur Windows ; Linux et macOS verts).
+
+---
+
 ## [0.4.1] — 2026-05-10
 
 ### Changed
