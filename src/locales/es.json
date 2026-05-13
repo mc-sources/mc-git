@@ -64,6 +64,11 @@
       "viewInHistory": "Ver en el historial",
       "deleteLocal": "Eliminar localmente"
     },
+    "message": {
+      "expand": "Mostrar el mensaje de anotación",
+      "collapse": "Ocultar el mensaje de anotación",
+      "empty": "(sin mensaje)"
+    },
     "delete": {
       "title": "¿Eliminar la etiqueta «{{name}}»?",
       "bannerPresentOnRemotes": "Esta etiqueta también está presente en {{remotes}}. Eliminarla localmente no la eliminará de esos remotos.",

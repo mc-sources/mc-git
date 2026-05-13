@@ -80,6 +80,20 @@ export function TagList() {
   const [deleteDialog, setDeleteDialog] = useState<TagInfo | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
+
+  const toggleMessageExpansion = (tagName: string) => {
+    setExpandedMessages((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagName)) {
+        next.delete(tagName);
+      } else {
+        next.add(tagName);
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!contextMenu) return;
     const onKey = (e: KeyboardEvent) => {
@@ -295,78 +309,113 @@ export function TagList() {
 
   const renderTagLeaf = (tag: TagInfo) => {
     const isHighlighted = highlightedTagName === tag.name;
-    const taggerTooltip =
+    const taggerSuffix =
       tag.isAnnotated && tag.tagger
-        ? `${tag.tagger.name} — ${new Date(tag.tagger.when * 1000).toLocaleString()}`
-        : undefined;
+        ? `— ${tag.tagger.name} (${new Date(tag.tagger.when * 1000).toLocaleString()})`
+        : null;
+    const nameTooltip =
+      tag.isAnnotated && tag.message
+        ? `${tag.name}\n\n${tag.message}${taggerSuffix ? `\n\n${taggerSuffix}` : ""}`
+        : tag.isAnnotated && taggerSuffix
+          ? `${tag.name}\n\n${taggerSuffix}`
+          : tag.name;
     const isPushingThis = pushing?.tag === tag.name;
+    const hasExpandableMessage = tag.isAnnotated && !!tag.message;
+    const isExpanded = expandedMessages.has(tag.name);
 
     return (
-      <div
-        key={tag.name}
-        ref={isHighlighted ? highlightedRowRef : undefined}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          setContextMenu({ tag, x: e.clientX, y: e.clientY });
-        }}
-        className={[
-          "group flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-colors",
-          isHighlighted
-            ? "bg-blue-600/20 border border-blue-500/30"
-            : "hover:bg-surface-hover border border-transparent",
-        ].join(" ")}
-      >
-        <span className="text-sm text-text-primary truncate font-medium" title={tag.name}>
-          {tag.name}
-        </span>
-        <span className="text-[10px] text-text-secondary font-mono shrink-0">
-          {tag.targetOid.slice(0, 7)}
-        </span>
-        {tag.isAnnotated ? (
-          <span
-            title={taggerTooltip}
-            className="text-[9px] uppercase tracking-wide bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded px-1.5 py-0.5 font-medium shrink-0"
-          >
-            {t("tags.annotated")}
-          </span>
-        ) : (
-          <span className="text-[9px] uppercase tracking-wide bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded px-1.5 py-0.5 font-medium shrink-0">
-            {t("tags.lightweight")}
-          </span>
-        )}
-        <span className="flex-1" />
-        <button
-          title={
-            remotes.length === 0
-              ? t("tags.push.noRemote")
-              : t("tags.menu.pushTo")
-          }
-          disabled={remotes.length === 0 || isPushingThis}
-          onClick={(e) => {
-            e.stopPropagation();
-            const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
-            setPushMenu({ tag, x: rect.right, y: rect.bottom });
+      <div key={tag.name} className="flex flex-col">
+        <div
+          ref={isHighlighted ? highlightedRowRef : undefined}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            setContextMenu({ tag, x: e.clientX, y: e.clientY });
           }}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-text-muted hover:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed"
+          className={[
+            "group flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-colors",
+            isHighlighted
+              ? "bg-blue-600/20 border border-blue-500/30"
+              : "hover:bg-surface-hover border border-transparent",
+          ].join(" ")}
         >
-          {isPushingThis ? (
-            <span className="w-3 h-3 rounded-full border-2 border-blue-400/40 border-t-blue-400 animate-spin inline-block" />
+          <span className="text-sm text-text-primary truncate font-medium" title={nameTooltip}>
+            {tag.name}
+          </span>
+          <span className="text-[10px] text-text-secondary font-mono shrink-0">
+            {tag.targetOid.slice(0, 7)}
+          </span>
+          {tag.isAnnotated ? (
+            <span
+              title={taggerSuffix ?? undefined}
+              className="text-[9px] uppercase tracking-wide bg-blue-500/15 text-blue-300 border border-blue-500/30 rounded px-1.5 py-0.5 font-medium shrink-0"
+            >
+              {t("tags.annotated")}
+            </span>
           ) : (
-            <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
-              <path d="M8 4v8M5 7l3-3 3 3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M3 13h10" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
-            </svg>
+            <span className="text-[9px] uppercase tracking-wide bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded px-1.5 py-0.5 font-medium shrink-0">
+              {t("tags.lightweight")}
+            </span>
           )}
-        </button>
-        <button
-          title={t("tags.showInHistory")}
-          onClick={() => handleNavigateToCommit(tag.targetOid)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-text-muted hover:text-blue-400"
-        >
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
-            <path d="M2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8Zm6-1.5a.75.75 0 0 0 0 1.5h1.69l-.72.72a.75.75 0 1 0 1.06 1.06l2-2a.75.75 0 0 0 0-1.06l-2-2a.75.75 0 0 0-1.06 1.06l.72.72H8Z" />
-          </svg>
-        </button>
+          {hasExpandableMessage && (
+            <button
+              title={isExpanded ? t("tags.message.collapse") : t("tags.message.expand")}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMessageExpansion(tag.name);
+              }}
+              className="p-0.5 rounded text-text-muted hover:text-text-primary transition-colors shrink-0"
+            >
+              <svg
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className={[
+                  "w-3 h-3 transition-transform",
+                  isExpanded ? "rotate-180" : "",
+                ].join(" ")}
+              >
+                <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
+          <span className="flex-1" />
+          <button
+            title={
+              remotes.length === 0
+                ? t("tags.push.noRemote")
+                : t("tags.menu.pushTo")
+            }
+            disabled={remotes.length === 0 || isPushingThis}
+            onClick={(e) => {
+              e.stopPropagation();
+              const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+              setPushMenu({ tag, x: rect.right, y: rect.bottom });
+            }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-text-muted hover:text-blue-400 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {isPushingThis ? (
+              <span className="w-3 h-3 rounded-full border-2 border-blue-400/40 border-t-blue-400 animate-spin inline-block" />
+            ) : (
+              <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                <path d="M8 4v8M5 7l3-3 3 3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 13h10" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" />
+              </svg>
+            )}
+          </button>
+          <button
+            title={t("tags.showInHistory")}
+            onClick={() => handleNavigateToCommit(tag.targetOid)}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-text-muted hover:text-blue-400"
+          >
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+              <path d="M2 8a6 6 0 1 1 12 0A6 6 0 0 1 2 8Zm6-1.5a.75.75 0 0 0 0 1.5h1.69l-.72.72a.75.75 0 1 0 1.06 1.06l2-2a.75.75 0 0 0 0-1.06l-2-2a.75.75 0 0 0-1.06 1.06l.72.72H8Z" />
+            </svg>
+          </button>
+        </div>
+        {hasExpandableMessage && isExpanded && (
+          <pre className="text-xs text-text-secondary bg-surface-overlay rounded-md px-3 py-2 mx-2.5 mt-1 mb-1 max-h-48 overflow-y-auto whitespace-pre-wrap font-sans border border-surface-border">
+            {tag.message}
+          </pre>
+        )}
       </div>
     );
   };

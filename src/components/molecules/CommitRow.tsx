@@ -229,6 +229,11 @@ export const CommitRow = memo(function CommitRow({
           {visibleTags.map((tag) => (
             <span
               key={tag.name}
+              title={
+                tag.isAnnotated && tag.message
+                  ? `${tag.name}\n\n${tag.message}`
+                  : tag.name
+              }
               className={`inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
                 tag.isAnnotated
                   ? "bg-blue-500/15 text-blue-400"
