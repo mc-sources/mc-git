@@ -1,6 +1,6 @@
 [package]
 name = "mcgit"
-version = "0.5.0"
+version = "0.6.0"
 description = "A desktop Git client built with Tauri, React and Rust"
 authors = ["Charles Martin-Gatignol"]
 license = "GPL-3.0-only"

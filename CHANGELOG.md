@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.6.0] — 2026-05-13
+
+### Added
+
+- **Affichage du message d'annotation d'un tag (US-0021)** : la donnée `TagInfo.message` (déjà remontée depuis libgit2 via `tag.message()`) est maintenant rendue dans l'UI. Dans `TagList` : tooltip enrichi sur le nom du tag (`<name>\n\n<message>\n\n— <tagger> (<date>)` pour les annotés), et un chevron `▾` cliquable apparaît sur chaque tag annoté **portant** un message. Au clic, un bloc `pre` déroulant s'affiche sous la ligne (rendu `whitespace-pre-wrap`, max-height `12rem` avec scroll vertical, `bg-surface-overlay`). Re-clic = repli. State local par tag (`useState<Set<string>>`). Dans `CommitRow` : badges tag enrichis d'un `title` HTML natif incluant le message d'annotation (`<name>\n\n<message>`). i18n FR/EN/ES (`tags.message.expand`, `tags.message.collapse`, `tags.message.empty`). Gap découvert via dogfood test EPIC-0004 lors du push de v0.5.0 depuis l'UI Mc-Git.
+
+---
+
 ## [0.5.0] — 2026-05-13
 
 ### Added

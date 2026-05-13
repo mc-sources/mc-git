@@ -64,6 +64,11 @@
       "viewInHistory": "View in history",
       "deleteLocal": "Delete locally"
     },
+    "message": {
+      "expand": "Show annotation message",
+      "collapse": "Hide annotation message",
+      "empty": "(no message)"
+    },
     "delete": {
       "title": "Delete tag \"{{name}}\"?",
       "bannerPresentOnRemotes": "This tag is also present on {{remotes}}. Deleting it locally will not remove it from those remotes.",
