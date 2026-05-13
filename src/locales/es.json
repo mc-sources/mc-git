@@ -69,6 +69,15 @@
       "collapse": "Ocultar el mensaje de anotación",
       "empty": "(sin mensaje)"
     },
+    "indicator": {
+      "popoverTitle": "Etiqueta «{{name}}» en los remotos",
+      "statusPresent": "presente",
+      "statusAbsent": "ausente — no enviada",
+      "statusUnknown": "nunca verificado",
+      "verifyRemote": "Verificar este remoto",
+      "pushMissing": "Enviar a los remotos faltantes ({{count}})",
+      "synthesisAll": "all"
+    },
     "delete": {
       "title": "¿Eliminar la etiqueta «{{name}}»?",
       "bannerPresentOnRemotes": "Esta etiqueta también está presente en {{remotes}}. Eliminarla localmente no la eliminará de esos remotos.",

@@ -9,7 +9,7 @@ import { listRemoteTagsUseCase } from "../tags";
  * laisse l'entrée du cache inchangée — l'indicateur multi-remotes restera à `?<remote>`
  * pour ce remote (cf. ANA-0007 T-0003 §1).
  */
-async function refreshRemoteTagPresence(
+export async function refreshRemoteTagPresence(
   repo: IGitRepository,
   remoteName: string
 ): Promise<void> {

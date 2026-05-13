@@ -21,6 +21,7 @@ import { parseAuthRequired, parseUnknownHost, parseMitmDetected } from "../../us
 import { TargetRefPicker } from "../molecules/TargetRefPicker";
 import { TagForcePushDialog } from "../molecules/TagForcePushDialog";
 import { TagDeleteDialog } from "../molecules/TagDeleteDialog";
+import { MultiRemoteIndicator } from "../molecules/MultiRemoteIndicator";
 import type { TagInfo, RemoteInfo } from "../../domain/entities";
 
 const HEAD_VALUE = "HEAD";
@@ -376,6 +377,13 @@ export function TagList() {
                 <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
+          )}
+          {remotes.length > 0 && (
+            <MultiRemoteIndicator
+              tagName={tag.name}
+              remotes={remotes}
+              onPushToRemote={(remoteName) => performPush(tag.name, remoteName, false)}
+            />
           )}
           <span className="flex-1" />
           <button
