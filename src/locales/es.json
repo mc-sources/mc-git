@@ -60,7 +60,19 @@
       }
     },
     "menu": {
-      "pushTo": "Enviar a"
+      "pushTo": "Enviar a",
+      "viewInHistory": "Ver en el historial",
+      "deleteLocal": "Eliminar localmente"
+    },
+    "delete": {
+      "title": "¿Eliminar la etiqueta «{{name}}»?",
+      "bannerPresentOnRemotes": "Esta etiqueta también está presente en {{remotes}}. Eliminarla localmente no la eliminará de esos remotos.",
+      "body": "Esta eliminación local es irreversible (la etiqueta puede recrearse manualmente). ¿Confirmar?",
+      "confirm": "Eliminar localmente",
+      "cancel": "Cancelar",
+      "done": "Etiqueta «{{name}}» eliminada.",
+      "failed": "Eliminación de {{name}} fallida: {{error}}",
+      "alreadyGone": "La etiqueta «{{name}}» fue eliminada fuera de Mc-Git."
     },
     "push": {
       "default": "predeterminado",

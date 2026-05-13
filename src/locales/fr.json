@@ -60,7 +60,19 @@
       }
     },
     "menu": {
-      "pushTo": "Pousser vers"
+      "pushTo": "Pousser vers",
+      "viewInHistory": "Voir dans l'historique",
+      "deleteLocal": "Supprimer en local"
+    },
+    "delete": {
+      "title": "Supprimer le tag « {{name}} » ?",
+      "bannerPresentOnRemotes": "Ce tag est aussi présent sur {{remotes}}. Le supprimer en local ne le supprimera pas sur ces remotes.",
+      "body": "Cette suppression locale est irréversible (le tag pourra être recréé manuellement). Confirmer ?",
+      "confirm": "Supprimer en local",
+      "cancel": "Annuler",
+      "done": "Tag « {{name}} » supprimé.",
+      "failed": "Suppression de {{name}} échouée : {{error}}",
+      "alreadyGone": "Le tag « {{name}} » a été supprimé en dehors de Mc-Git."
     },
     "push": {
       "default": "défaut",
