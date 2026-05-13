@@ -7,7 +7,12 @@ import { useUiStore } from "../../store/uiStore";
 import { useAuthStore } from "../../store/authStore";
 import { useGitRepository } from "../../infrastructure/GitRepositoryContext";
 import { useRepoStore } from "../../store/repoStore";
-import { listTagsUseCase, createTagUseCase, pushTagUseCase } from "../../usecases/tags";
+import {
+  listTagsUseCase,
+  createTagUseCase,
+  pushTagUseCase,
+  deleteTagUseCase,
+} from "../../usecases/tags";
 import { validateTagName } from "../../usecases/tags/validation";
 import { parseTagRemoteDivergent } from "../../usecases/tags/errors";
 import { listRemotesUseCase } from "../../usecases/remotes";
@@ -15,6 +20,7 @@ import { getDefaultRemoteUseCase } from "../../usecases/config";
 import { parseAuthRequired, parseUnknownHost, parseMitmDetected } from "../../usecases/auth";
 import { TargetRefPicker } from "../molecules/TargetRefPicker";
 import { TagForcePushDialog } from "../molecules/TagForcePushDialog";
+import { TagDeleteDialog } from "../molecules/TagDeleteDialog";
 import type { TagInfo, RemoteInfo } from "../../domain/entities";
 
 const HEAD_VALUE = "HEAD";
@@ -36,6 +42,12 @@ interface ForcePushDialogState {
   remote: string;
   remoteOid: string;
   localOid: string;
+}
+
+interface ContextMenuState {
+  tag: TagInfo;
+  x: number;
+  y: number;
 }
 
 export function TagList() {
@@ -63,6 +75,19 @@ export function TagList() {
   const [pushMenu, setPushMenu] = useState<PushMenuState | null>(null);
   const [pushing, setPushing] = useState<{ tag: string; remote: string } | null>(null);
   const [forcePushDialog, setForcePushDialog] = useState<ForcePushDialogState | null>(null);
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<TagInfo | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setContextMenu(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [contextMenu]);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -166,6 +191,39 @@ export function TagList() {
     await performCreate(pending);
   };
 
+  const presentOnRemotesFor = (tagName: string): string[] => {
+    const remotesList: string[] = [];
+    remoteTagPresence.forEach((set, remoteName) => {
+      if (set.has(tagName)) remotesList.push(remoteName);
+    });
+    return remotesList.sort();
+  };
+
+  const performDelete = async (tag: TagInfo) => {
+    setDeleting(true);
+    try {
+      await deleteTagUseCase(repo, tag.name);
+      toast.success(t("tags.delete.done", { name: tag.name }));
+      setDeleteDialog(null);
+      await refresh();
+      bumpLogVersion();
+    } catch (err) {
+      const errStr = String(err);
+      if (
+        errStr.toLowerCase().includes("not found") ||
+        errStr.includes("TagNotFoundLocal")
+      ) {
+        toast.info(t("tags.delete.alreadyGone", { name: tag.name }));
+        setDeleteDialog(null);
+        await refresh();
+      } else {
+        toast.error(t("tags.delete.failed", { name: tag.name, error: errStr }));
+      }
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const updateRemoteTagCache = (remoteName: string, tagName: string) => {
     const current = remoteTagPresence.get(remoteName);
     const next = new Set(current ?? []);
@@ -247,6 +305,10 @@ export function TagList() {
       <div
         key={tag.name}
         ref={isHighlighted ? highlightedRowRef : undefined}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setContextMenu({ tag, x: e.clientX, y: e.clientY });
+        }}
         className={[
           "group flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-colors",
           isHighlighted
@@ -493,6 +555,47 @@ export function TagList() {
           loading={pushing?.tag === forcePushDialog.tag && pushing?.remote === forcePushDialog.remote}
           onClose={() => setForcePushDialog(null)}
           onConfirm={() => performPush(forcePushDialog.tag, forcePushDialog.remote, true)}
+        />
+      )}
+
+      {contextMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
+          <div
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+            className="fixed z-50 bg-surface-elevated border border-surface-border rounded-lg shadow-2xl py-1 min-w-44 overflow-hidden"
+          >
+            <button
+              onClick={() => {
+                handleNavigateToCommit(contextMenu.tag.targetOid);
+                setContextMenu(null);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              {t("tags.menu.viewInHistory")}
+            </button>
+            <div className="border-t border-surface-border my-1" />
+            <button
+              onClick={() => {
+                setDeleteDialog(contextMenu.tag);
+                setContextMenu(null);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-surface-hover transition-colors"
+            >
+              {t("tags.menu.deleteLocal")}
+            </button>
+          </div>
+        </>
+      )}
+
+      {deleteDialog && (
+        <TagDeleteDialog
+          mode="local"
+          tag={deleteDialog}
+          presentOnRemotes={presentOnRemotesFor(deleteDialog.name)}
+          loading={deleting}
+          onClose={() => setDeleteDialog(null)}
+          onConfirm={() => performDelete(deleteDialog)}
         />
       )}
     </div>

@@ -60,7 +60,19 @@
       }
     },
     "menu": {
-      "pushTo": "Push to"
+      "pushTo": "Push to",
+      "viewInHistory": "View in history",
+      "deleteLocal": "Delete locally"
+    },
+    "delete": {
+      "title": "Delete tag \"{{name}}\"?",
+      "bannerPresentOnRemotes": "This tag is also present on {{remotes}}. Deleting it locally will not remove it from those remotes.",
+      "body": "This local deletion is irreversible (the tag can be re-created manually). Confirm?",
+      "confirm": "Delete locally",
+      "cancel": "Cancel",
+      "done": "Tag \"{{name}}\" deleted.",
+      "failed": "Deletion of {{name}} failed: {{error}}",
+      "alreadyGone": "Tag \"{{name}}\" was deleted outside of Mc-Git."
     },
     "push": {
       "default": "default",

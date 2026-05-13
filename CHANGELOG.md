@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.5.0] — 2026-05-13
+
+### Added
+
+- **Suppression locale d'un tag (US-0014)** : clic-droit sur un tag local dans la `TagList` ouvre un menu contextuel (« Voir dans l'historique », séparateur, « Supprimer en local » en rouge) qui pilote le nouveau dialog `TagDeleteDialog`. Confirmation classique sans checkbox (la suppression locale est récupérable). Si le tag est aussi présent sur un ou plusieurs remotes (lecture de `gitStore.remoteTagPresence`, alimenté par US-0015), une bannière info bleue rappelle que la suppression ne touche que le local et que le tag persiste sur les remotes listés. Au confirm : `deleteTagUseCase` → toast succès `tags.delete.done` → `refresh()` + `bumpLogVersion()`. Race CLI parallèle (`tag not found` côté Rust) gérée : toast info silencieux `tags.delete.alreadyGone` + archivage automatique dans LogPanel via `toastStore` (REQ-UX-018). i18n FR/EN/ES. Le composant `TagDeleteDialog` accepte une prop `mode: "local" | "remote"` en prévision d'US-0018 (suppression remote).
+
+---
+
 ## [0.4.2] — 2026-05-12
 
 ### Fixed
