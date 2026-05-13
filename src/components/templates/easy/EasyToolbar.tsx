@@ -256,7 +256,7 @@ export function EasyToolbar() {
     }
   };
 
-  const handlePush = async (remote: string, branchNames: string[], force: boolean) => {
+  const handlePush = async (remote: string, branchNames: string[], force: boolean, _pushAllTags: boolean = false) => {
     setShowPushDialog(false);
     setLoading("push");
     try {
@@ -372,6 +372,7 @@ export function EasyToolbar() {
           defaultBranches={[currentBranch]}
           initialForce={false}
           loading={loading === "push"}
+          showAllTagsOption={false}
           onClose={() => setShowPushDialog(false)}
           onConfirm={handlePush}
         />

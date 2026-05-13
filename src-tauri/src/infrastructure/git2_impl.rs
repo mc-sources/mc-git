@@ -6,7 +6,7 @@ use crate::error::Result;
 use crate::git::types::{
     BlameLine, BranchInfo, CherryPickStatus, CommitDetail, CommitSummary, FileDiff, GitFlowConfig,
     LogFilters, MergeStatus, RebaseEntry, RebaseStatus, RebaseStep, ReflogEntry, RemoteFetchResult,
-    RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
+    RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo, TagPushResult,
 };
 use crate::git::{
     blame, branch, cherry_pick, commit, config, diff, gitflow, history, merge, patch, rebase,
@@ -381,6 +381,10 @@ impl GitRepository for Git2Repository {
 
     fn push_tag(&self, remote_name: &str, tag_name: &str, force: bool) -> Result<()> {
         tag::push_tag(self.repo(), remote_name, tag_name, force)
+    }
+
+    fn push_all_tags(&self, remote_name: &str) -> Result<Vec<TagPushResult>> {
+        tag::push_all_tags(self.repo(), remote_name)
     }
 
     fn delete_remote_tag(&self, remote_name: &str, tag_name: &str) -> Result<()> {

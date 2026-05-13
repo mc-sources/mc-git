@@ -9,8 +9,14 @@ interface Props {
   defaultBranches: string[];
   initialForce: boolean;
   loading: boolean;
+  showAllTagsOption?: boolean;
   onClose: () => void;
-  onConfirm: (remote: string, branches: string[], force: boolean) => void;
+  onConfirm: (
+    remote: string,
+    branches: string[],
+    force: boolean,
+    pushAllTags: boolean,
+  ) => void;
 }
 
 export function PushDialog({
@@ -20,6 +26,7 @@ export function PushDialog({
   defaultBranches,
   initialForce,
   loading,
+  showAllTagsOption = true,
   onClose,
   onConfirm,
 }: Props) {
@@ -31,6 +38,7 @@ export function PushDialog({
     () => new Set(defaultBranches)
   );
   const [force, setForce] = useState(initialForce);
+  const [pushAllTags, setPushAllTags] = useState(false);
 
   const localBranches = branches.filter((b) => !b.isRemote);
 
@@ -132,6 +140,27 @@ export function PushDialog({
               {t("toolbar.forcePushWarning")}
             </p>
           )}
+
+          {/* Push all tags */}
+          {showAllTagsOption && (
+            <div className="flex flex-col gap-1">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pushAllTags}
+                  onChange={(e) => setPushAllTags(e.target.checked)}
+                  disabled={loading}
+                  className="w-3.5 h-3.5 accent-blue-500"
+                />
+                <span className="text-sm text-text-primary">
+                  {t("pushDialog.allTags")}
+                </span>
+              </label>
+              <p className="text-xs text-text-muted pl-6">
+                {t("pushDialog.allTagsHelp")}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -145,7 +174,9 @@ export function PushDialog({
             </button>
           )}
           <button
-            onClick={() => onConfirm(remote, Array.from(selectedBranches), force)}
+            onClick={() =>
+              onConfirm(remote, Array.from(selectedBranches), force, pushAllTags)
+            }
             disabled={!canConfirm || loading}
             className={`px-5 py-2 text-sm font-medium disabled:opacity-40 text-white rounded-md transition-colors flex items-center gap-2 ${
               force ? "bg-orange-600 hover:bg-orange-500" : "bg-blue-600 hover:bg-blue-500"

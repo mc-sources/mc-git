@@ -558,8 +558,17 @@
     "branches": "Branches",
     "noRemotes": "Aucun remote configuré",
     "forcePush": "Force push (--force-with-lease)",
+    "allTags": "Pousser tous les tags",
+    "allTagsHelp": "Pousse tous les tags locaux vers le remote sélectionné en une seule opération.",
     "confirm": "Pousser",
     "notFastForward": "Push refusé : la branche distante a des commits que vous n'avez pas. Faites d'abord un pull, ou activez le force push si vous souhaitez écraser l'historique distant."
+  },
+  "pushAllTags": {
+    "title": "Push de {{count}} tag(s) vers {{remote}}",
+    "summary": "{{success}} succès, {{failed}} échec(s)",
+    "retryFailed": "Réessayer les échecs",
+    "close": "Fermer",
+    "empty": "Aucun tag local à pousser."
   },
   "stashDialog": {
     "title": "Créer un stash",

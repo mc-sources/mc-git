@@ -558,8 +558,17 @@
     "branches": "Ramas",
     "noRemotes": "Ningún remote configurado",
     "forcePush": "Force push (--force-with-lease)",
+    "allTags": "Enviar todas las etiquetas",
+    "allTagsHelp": "Envía todas las etiquetas locales al remote seleccionado en una sola operación.",
     "confirm": "Empujar",
     "notFastForward": "Push rechazado: la rama remota tiene commits que no tienes localmente. Haz un pull primero, o activa el force push si deseas sobrescribir el historial remoto."
+  },
+  "pushAllTags": {
+    "title": "Enviar {{count}} etiqueta(s) a {{remote}}",
+    "summary": "{{success}} exitosa(s), {{failed}} fallida(s)",
+    "retryFailed": "Reintentar las fallidas",
+    "close": "Cerrar",
+    "empty": "Ninguna etiqueta local que enviar."
   },
   "stashDialog": {
     "title": "Crear un stash",

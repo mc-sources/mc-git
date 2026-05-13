@@ -1,7 +1,7 @@
 use tauri::{AppHandle, State};
 
 use crate::error::{AppError, Result};
-use crate::git::types::TagInfo;
+use crate::git::types::{TagInfo, TagPushResult};
 use crate::logger::log_result;
 use crate::state::AppState;
 
@@ -59,6 +59,20 @@ pub fn push_tag(
         &format!("push_tag({remote_name}/{tag_name}, force={force})"),
         result,
     )
+}
+
+#[tauri::command]
+pub fn push_all_tags(
+    remote_name: String,
+    app: AppHandle,
+    state: State<AppState>,
+) -> Result<Vec<TagPushResult>> {
+    let result = {
+        let guard = state.lock_repo()?;
+        let repo = guard.as_ref().ok_or(AppError::NoRepository)?;
+        repo.push_all_tags(&remote_name)
+    };
+    log_result(&app, &format!("push_all_tags({remote_name})"), result)
 }
 
 #[tauri::command]

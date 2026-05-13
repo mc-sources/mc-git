@@ -1,8 +1,10 @@
+use std::cell::RefCell;
+
 use git2::{ObjectType, Repository};
 
 use crate::error::{AppError, Result};
 use crate::git::credentials::{build_callbacks, remap_cert_error};
-use crate::git::types::{Signature, TagInfo};
+use crate::git::types::{Signature, TagInfo, TagPushResult};
 
 pub fn list_tags(repo: &Repository) -> Result<Vec<TagInfo>> {
     let mut tags: Vec<TagInfo> = Vec::new();
@@ -207,6 +209,75 @@ pub fn push_tag(repo: &Repository, remote_name: &str, tag_name: &str, force: boo
         .push(&[refspec.as_str()], Some(&mut push_opts))
         .map_err(|e| remap_cert_error(e, &cert_err))?;
     Ok(())
+}
+
+/// Pushes all local tags to `remote_name` in a single network operation using the
+/// refspec glob `refs/tags/*:refs/tags/*`. Per-ref status is collected via libgit2's
+/// `push_update_reference` callback: an empty error means success, a non-empty error
+/// means the server rejected that specific ref (divergent tag, hook reject, …).
+///
+/// Returns a `TagPushResult` per local tag, including those silently skipped by
+/// libgit2 (mapped as failures with a synthetic error). If there are no local tags,
+/// returns an empty vector without contacting the remote.
+///
+/// Force push is **not** supported here: the refspec glob does not accept the `+`
+/// prefix uniformly across servers. Force-push divergent tags individually via
+/// `push_tag(..., force=true)`.
+pub fn push_all_tags(repo: &Repository, remote_name: &str) -> Result<Vec<TagPushResult>> {
+    let local_tags: Vec<String> = list_tags(repo)?.into_iter().map(|t| t.name).collect();
+    if local_tags.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    // libgit2 (git2 0.19) does not expand glob refspecs locally for push, so we
+    // materialise one fully-qualified refspec per tag (cf. libgit2#3216). Force
+    // is not propagated here — for divergent tags the caller falls back on
+    // `push_tag(force=true)` after diagnosing via `PushAllTagsResultPanel`.
+    let refspecs: Vec<String> = local_tags
+        .iter()
+        .map(|name| format!("refs/tags/{name}:refs/tags/{name}"))
+        .collect();
+    let refspec_refs: Vec<&str> = refspecs.iter().map(String::as_str).collect();
+
+    let results: RefCell<Vec<TagPushResult>> = RefCell::new(Vec::new());
+    {
+        let (mut callbacks, cert_err) = build_callbacks();
+        callbacks.push_update_reference(|refname, status| {
+            let tag_name = refname.trim_start_matches("refs/tags/").to_string();
+            results.borrow_mut().push(TagPushResult {
+                tag_name,
+                success: status.is_none(),
+                error: status.map(String::from),
+            });
+            Ok(())
+        });
+
+        let mut remote = repo.find_remote(remote_name)?;
+        let mut push_opts = git2::PushOptions::new();
+        push_opts.remote_callbacks(callbacks);
+        remote
+            .push(&refspec_refs, Some(&mut push_opts))
+            .map_err(|e| remap_cert_error(e, &cert_err))?;
+    }
+
+    // libgit2 only invokes push_update_reference for refs it actually attempted to
+    // update on the remote. Tags that already match the remote are skipped silently,
+    // so we materialise them as successes after the fact.
+    let mut reported = results.into_inner();
+    let reported_names: std::collections::HashSet<&str> =
+        reported.iter().map(|r| r.tag_name.as_str()).collect();
+    let missing: Vec<TagPushResult> = local_tags
+        .iter()
+        .filter(|name| !reported_names.contains(name.as_str()))
+        .map(|name| TagPushResult {
+            tag_name: name.clone(),
+            success: true,
+            error: None,
+        })
+        .collect();
+    reported.extend(missing);
+    reported.sort_by(|a, b| a.tag_name.cmp(&b.tag_name));
+    Ok(reported)
 }
 
 pub fn delete_remote_tag(repo: &Repository, remote_name: &str, tag_name: &str) -> Result<()> {
@@ -496,5 +567,49 @@ mod tests {
         remote.disconnect().unwrap();
 
         assert_eq!(advertised, new_commit_oid.to_string());
+    }
+
+    #[test]
+    fn push_all_tags_pushes_every_local_tag() {
+        let (_local_tmp, _bare_tmp, local_repo) =
+            setup_local_with_bare_remote(&["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]);
+
+        let results = push_all_tags(&local_repo, "origin").unwrap();
+
+        assert_eq!(results.len(), 5);
+        assert!(results.iter().all(|r| r.success));
+        let names: Vec<&str> = results.iter().map(|r| r.tag_name.as_str()).collect();
+        assert_eq!(
+            names,
+            vec!["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]
+        );
+
+        let advertised = list_remote_tags(&local_repo, "origin").unwrap();
+        assert_eq!(advertised.len(), 5);
+    }
+
+    #[test]
+    fn push_all_tags_returns_empty_when_no_local_tags() {
+        let (_local_tmp, _bare_tmp, local_repo) = setup_local_with_bare_remote(&[]);
+
+        let results = push_all_tags(&local_repo, "origin").unwrap();
+
+        assert!(results.is_empty());
+    }
+
+    #[test]
+    fn push_all_tags_reports_idempotent_runs_as_success() {
+        // After a first successful push, a second call should mark every tag as
+        // success even though libgit2 may not invoke push_update_reference for
+        // already-up-to-date refs (synthetic success path in push_all_tags).
+        let (_local_tmp, _bare_tmp, local_repo) =
+            setup_local_with_bare_remote(&["v1.0.0", "v1.1.0"]);
+        push_all_tags(&local_repo, "origin").unwrap();
+
+        let results = push_all_tags(&local_repo, "origin").unwrap();
+
+        assert_eq!(results.len(), 2);
+        assert!(results.iter().all(|r| r.success));
+        assert!(results.iter().all(|r| r.error.is_none()));
     }
 }

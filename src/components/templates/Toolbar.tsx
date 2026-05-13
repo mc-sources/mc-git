@@ -19,7 +19,10 @@ import { ToolbarButton } from "../atoms/ToolbarButton";
 import { SplitButton } from "../atoms/SplitButton";
 import { DropdownButton } from "../atoms/DropdownButton";
 import { PushDialog } from "../molecules/PushDialog";
+import { PushAllTagsResultPanel } from "../molecules/PushAllTagsResultPanel";
 import { FeedbackDialog } from "../molecules/FeedbackDialog";
+import { pushAllTagsUseCase } from "../../usecases/tags";
+import type { TagPushResult } from "../../domain/entities";
 import { getAppVersion } from "../../usecases/app";
 import { openTerminal, openInEditor, openFolder } from "../../services/systemService";
 
@@ -61,13 +64,17 @@ export function Toolbar() {
   const { t } = useTranslation();
   const repo = useGitRepository();
   const { currentRepo } = useRepoStore();
-  const { branches, setStatus, setBranches, bumpLogVersion } = useGitStore();
+  const { branches, setStatus, setBranches, bumpLogVersion, setRemoteTagPresenceForRemote, remoteTagPresence } = useGitStore();
   const { setRepositoryState } = useUiStore();
   const [loading, setLoading] = useState<Op>(null);
   const [showPushDialog, setShowPushDialog] = useState(false);
   const [pushDialogRemotes, setPushDialogRemotes] = useState<RemoteInfo[]>([]);
   const [pushDialogInitialForce, setPushDialogInitialForce] = useState(false);
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [pushAllTagsPanel, setPushAllTagsPanel] = useState<{
+    remote: string;
+    results: TagPushResult[];
+  } | null>(null);
   const [appVersion, setAppVersion] = useState("");
   const [remotes, setRemotes] = useState<RemoteInfo[]>([]);
   const [defaultRemote, setDefaultRemote] = useState("origin");
@@ -201,7 +208,39 @@ export function Toolbar() {
     }
   };
 
-  const handlePush = async (remote: string, branchNames: string[], force: boolean) => {
+  const handlePushAllTags = async (remote: string) => {
+    try {
+      const results = await pushAllTagsUseCase(repo, remote);
+      // Update cache : for each success, add to the remote tag presence set.
+      const existing = remoteTagPresence.get(remote) ?? new Set<string>();
+      const next = new Set(existing);
+      for (const r of results) {
+        if (r.success) next.add(r.tagName);
+      }
+      setRemoteTagPresenceForRemote(remote, Array.from(next));
+      setPushAllTagsPanel({ remote, results });
+    } catch (e) {
+      const err = String(e);
+      const unknownHost = parseUnknownHost(err);
+      const mitm = parseMitmDetected(err);
+      if (unknownHost) {
+        showTofuModal(unknownHost.host, unknownHost.fingerprint, () =>
+          handlePushAllTags(remote),
+        );
+      } else if (mitm) {
+        toast.error(t("sshTofu.mitmWarning", { host: mitm.host, fingerprint: mitm.fingerprint }));
+      } else {
+        toast.error(err);
+      }
+    }
+  };
+
+  const handlePush = async (
+    remote: string,
+    branchNames: string[],
+    force: boolean,
+    pushAllTags: boolean = false,
+  ) => {
     setShowPushDialog(false);
     const op: Op = force ? "force-push" : "push";
     const msg = force ? t("toolbar.forcePushDone") : t("toolbar.pushDone");
@@ -217,13 +256,16 @@ export function Toolbar() {
       toast.success(msg);
       const branchList = await listBranchesUseCase(repo, "all");
       setBranches(branchList);
+      if (pushAllTags) {
+        await handlePushAllTags(remote);
+      }
     } catch (e) {
       const err = String(e);
       const unknownHost = parseUnknownHost(err);
       const mitm = parseMitmDetected(err);
       if (unknownHost) {
         showTofuModal(unknownHost.host, unknownHost.fingerprint, () =>
-          handlePush(remote, branchNames, force)
+          handlePush(remote, branchNames, force, pushAllTags)
         );
       } else if (mitm) {
         toast.error(t("sshTofu.mitmWarning", { host: mitm.host, fingerprint: mitm.fingerprint }));
@@ -427,6 +469,17 @@ export function Toolbar() {
           loading={loading === "push" || loading === "force-push"}
           onClose={() => setShowPushDialog(false)}
           onConfirm={handlePush}
+        />
+      )}
+
+      {pushAllTagsPanel && (
+        <PushAllTagsResultPanel
+          remote={pushAllTagsPanel.remote}
+          results={pushAllTagsPanel.results}
+          onClose={() => setPushAllTagsPanel(null)}
+          onRetryFailed={async () => {
+            await handlePushAllTags(pushAllTagsPanel.remote);
+          }}
         />
       )}
     </>

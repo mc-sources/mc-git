@@ -132,6 +132,12 @@ export interface TagInfo {
   tagger: Signature | null;
 }
 
+export interface TagPushResult {
+  tagName: string;
+  success: boolean;
+  error: string | null;
+}
+
 export interface StashEntry {
   index: number;
   message: string;

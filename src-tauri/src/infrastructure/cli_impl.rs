@@ -7,7 +7,7 @@ use crate::git::types::{
     BlameLine, BranchInfo, ChangedFileSummary, CherryPickStatus, CommitDetail, CommitSummary,
     FileDiff, FileStatusKind, GitFlowConfig, LogFilters, MergeStatus, RebaseStatus, ReflogEntry,
     RemoteFetchResult, RemoteInfo, RepoInfo, Signature, StashEntry, StatusEntry, SubmoduleInfo,
-    TagInfo,
+    TagInfo, TagPushResult,
 };
 
 /// Concrete implementation of `GitRepository` backed by the system `git` binary.
@@ -873,6 +873,10 @@ impl GitRepository for CliGitRepository {
 
     fn push_tag(&self, _remote_name: &str, _tag_name: &str, _force: bool) -> Result<()> {
         Err(Self::unsupported("push de tag"))
+    }
+
+    fn push_all_tags(&self, _remote_name: &str) -> Result<Vec<TagPushResult>> {
+        Err(Self::unsupported("push de tous les tags"))
     }
 
     fn delete_remote_tag(&self, _remote_name: &str, _tag_name: &str) -> Result<()> {
