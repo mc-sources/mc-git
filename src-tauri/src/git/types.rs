@@ -178,6 +178,13 @@ pub struct TagInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TagPushResult {
+    pub tag_name: String,
+    pub success: bool,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StashEntry {
     pub index: usize,
     pub message: String,

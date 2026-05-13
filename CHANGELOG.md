@@ -10,6 +10,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.8.0] — 2026-05-13
+
+### Added
+
+- **Push all tags via PushDialog (US-0019)** : nouvelle case à cocher « Pousser tous les tags » dans `PushDialog`, sous les options de force-push. Décochée par défaut, non persistée. Visible en mode standard, **masquée en Easy mode** (prop `showAllTagsOption={false}` côté `EasyToolbar` — directive HU-PO 2026-05-09 sur Easy gelé). Quand cochée, après le push de branche réussi, déclenche un push agrégé de tous les tags locaux via la nouvelle commande Rust `push_all_tags` (un seul appel `Remote::push` avec N refspecs `refs/tags/<name>:refs/tags/<name>`, statut par tag collecté via callback `push_update_reference`). Affiche ensuite un panneau modal `PushAllTagsResultPanel` listant chaque tag avec ✓ (vert) / ✗ (rouge) + message d'erreur si échec, avec bouton « Réessayer les échecs ». Mise à jour automatique de `gitStore.remoteTagPresence` pour chaque succès (synchronisé avec l'indicateur multi-remotes US-0016). Gestion auth/TOFU/MITM héritée du pattern existant. Le force-push agrégé n'est pas supporté (refspec glob refusé par libgit2 0.19, cf. libgit2#3216) ; pour les tags divergents, l'utilisateur force-push individuellement via US-0017. i18n FR/EN/ES.
+
+### Changed
+
+- **`refreshRemoteTagPresence` exporté** depuis `usecases/remotes` (déjà fait en US-0016) — utilisé par le nouveau flow d'agrégation post-push.
+
+---
+
 ## [0.7.0] — 2026-05-13
 
 ### Added

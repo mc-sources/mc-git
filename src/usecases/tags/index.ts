@@ -1,5 +1,5 @@
 import type { IGitRepository } from "../../domain/ports/IGitRepository";
-import type { TagInfo } from "../../domain/entities";
+import type { TagInfo, TagPushResult } from "../../domain/entities";
 
 export async function listTagsUseCase(repo: IGitRepository): Promise<TagInfo[]> {
   return repo.listTags();
@@ -25,6 +25,13 @@ export async function pushTagUseCase(
   force: boolean = false,
 ): Promise<void> {
   return repo.pushTag(remoteName, tagName, force);
+}
+
+export async function pushAllTagsUseCase(
+  repo: IGitRepository,
+  remoteName: string,
+): Promise<TagPushResult[]> {
+  return repo.pushAllTags(remoteName);
 }
 
 export async function deleteRemoteTagUseCase(

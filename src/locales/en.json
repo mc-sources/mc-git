@@ -558,8 +558,17 @@
     "branches": "Branches",
     "noRemotes": "No remote configured",
     "forcePush": "Force push (--force-with-lease)",
+    "allTags": "Push all tags",
+    "allTagsHelp": "Push all local tags to the selected remote in a single operation.",
     "confirm": "Push",
     "notFastForward": "Push rejected: the remote branch has commits you don't have locally. Pull first, or enable force push if you want to overwrite the remote history."
+  },
+  "pushAllTags": {
+    "title": "Push {{count}} tag(s) to {{remote}}",
+    "summary": "{{success}} succeeded, {{failed}} failed",
+    "retryFailed": "Retry failed",
+    "close": "Close",
+    "empty": "No local tag to push."
   },
   "stashDialog": {
     "title": "Create stash",

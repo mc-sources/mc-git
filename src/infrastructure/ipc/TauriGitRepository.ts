@@ -26,6 +26,7 @@ import type {
   StatusEntry,
   SubmoduleInfo,
   TagInfo,
+  TagPushResult,
 } from "../../domain/entities";
 
 // Wire types (snake_case) from Rust IPC
@@ -600,6 +601,21 @@ export class TauriGitRepository implements IGitRepository {
 
   async pushTag(remoteName: string, tagName: string, force: boolean): Promise<void> {
     return invoke<void>("push_tag", { remoteName, tagName, force });
+  }
+
+  async pushAllTags(remoteName: string): Promise<TagPushResult[]> {
+    interface WireTagPushResult {
+      tag_name: string;
+      success: boolean;
+      error: string | null;
+    }
+    return invoke<WireTagPushResult[]>("push_all_tags", { remoteName }).then((arr) =>
+      arr.map((w) => ({
+        tagName: w.tag_name,
+        success: w.success,
+        error: w.error,
+      })),
+    );
   }
 
   async deleteRemoteTag(remoteName: string, tagName: string): Promise<void> {

@@ -2,7 +2,7 @@ use crate::error::Result;
 use crate::git::types::{
     BlameLine, BranchInfo, CherryPickStatus, CommitDetail, CommitSummary, FileDiff, GitFlowConfig,
     LogFilters, MergeStatus, RebaseEntry, RebaseStatus, RebaseStep, ReflogEntry, RemoteFetchResult,
-    RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo,
+    RemoteInfo, RepoInfo, StashEntry, StatusEntry, SubmoduleInfo, TagInfo, TagPushResult,
 };
 
 /// Abstract port for all git operations on an opened repository.
@@ -147,6 +147,7 @@ pub trait GitRepository: Send {
     fn create_tag(&self, name: &str, target_oid: &str, message: Option<&str>) -> Result<TagInfo>;
     fn delete_tag(&self, name: &str) -> Result<()>;
     fn push_tag(&self, remote_name: &str, tag_name: &str, force: bool) -> Result<()>;
+    fn push_all_tags(&self, remote_name: &str) -> Result<Vec<TagPushResult>>;
     fn delete_remote_tag(&self, remote_name: &str, tag_name: &str) -> Result<()>;
     fn list_remote_tags(&self, remote_name: &str) -> Result<Vec<String>>;
 
