@@ -7,3 +7,4 @@ export * from "./MiniDiff";
 export * from "./TargetRefPicker";
 export * from "./TagForcePushDialog";
 export * from "./TagDeleteDialog";
+export * from "./MultiRemoteIndicator";

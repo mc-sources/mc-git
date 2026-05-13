@@ -10,6 +10,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.7.0] — 2026-05-13
+
+### Added
+
+- **Indicateur multi-remotes pour chaque tag (US-0016)** : nouvelle molecule `MultiRemoteIndicator` rendue à droite de la metadata dans chaque ligne de `TagList`. Calcule pour chaque remote configuré l'état du tag (✓ présent en emerald, ⬆ absent en orange, ? jamais vérifié en zinc neutre) à partir du cache `gitStore.remoteTagPresence` (alimenté par US-0015 via les fetch/pull/prune). Affichage **inline** pour ≤ 3 remotes (un picto par remote avec nom collé), **synthèse** pour ≥ 4 remotes (`⬆ origin, github, …` / `✓ all` / `? remote-x, …`). Le clic ouvre un popover détaillé listant chaque remote avec son statut et 2 actions par ligne quand pertinent : « Vérifier ce remote » (icône refresh) pour les états `?` (déclenche `refreshRemoteTagPresence` → met à jour le cache et ré-évalue), bouton push individuel pour les états `⬆`. Footer popover : « Pousser sur les remotes manquants (N) » qui itère séquentiellement sur tous les remotes absents en réutilisant la même `performPush` que le menu push existant (gestion auth/TOFU/divergent identique). Spinners par remote pendant refresh/push. i18n FR/EN/ES (`tags.indicator.*`). Côté API : `refreshRemoteTagPresence` exporté depuis `usecases/remotes`. La spec REQ-TAG-F8 prévoyait un bouton `disabled` avec tooltip `pushPending` tant qu'US-0017 n'était pas mergée — US-0017 ayant été livrée d'abord pour atteindre la cible EPIC-0004, le câblage push est posé directement (pas de dead code intermédiaire).
+
+---
+
 ## [0.6.0] — 2026-05-13
 
 ### Added

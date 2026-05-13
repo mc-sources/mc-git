@@ -69,6 +69,15 @@
       "collapse": "Masquer le message d'annotation",
       "empty": "(aucun message)"
     },
+    "indicator": {
+      "popoverTitle": "Tag « {{name}} » sur les remotes",
+      "statusPresent": "présent",
+      "statusAbsent": "absent — non poussé",
+      "statusUnknown": "jamais vérifié",
+      "verifyRemote": "Vérifier ce remote",
+      "pushMissing": "Pousser sur les remotes manquants ({{count}})",
+      "synthesisAll": "all"
+    },
     "delete": {
       "title": "Supprimer le tag « {{name}} » ?",
       "bannerPresentOnRemotes": "Ce tag est aussi présent sur {{remotes}}. Le supprimer en local ne le supprimera pas sur ces remotes.",
