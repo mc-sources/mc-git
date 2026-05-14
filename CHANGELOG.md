@@ -10,6 +10,19 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.10.0] — 2026-05-14
+
+### Changed
+
+- **Adaptation `CommitRow` — tag inline informatif (US-0020)** : suppression du bouton `×` interne aux badges tag dans l'historique. La suppression locale d'un tag passe désormais par la `TagList` (où l'utilisateur dispose de la matrice complète local/remote pour une décision informée, cf. T-0002 Q5 variante Q′). Le bouton « + tag » reste accessible sur chaque ligne au survol — création toujours rapide depuis le contexte d'un commit, default annotated, target OID figé sur le commit du row.
+
+### Added
+
+- **Clic badge tag → navigation vers la TagList (US-0020)** : chaque badge tag inline dans `CommitRow` est désormais cliquable (`cursor-pointer`, `role="button"`, support clavier Enter / Espace) ; un clic met à jour `useUiStore().highlightedTagName` puis bascule `activeView` sur `"tags"` — la `TagList` ouvre alors avec le tag mis en évidence (highlight 3 s, mécanique US-0011 + US-0012). Le tooltip natif du badge ajoute la mention « Cliquer pour voir dans la liste de tags ». En Easy mode (`useSettingsStore().easyMode === true`), le clic-vers-TagList est désactivé (les badges restent purement informatifs — la vue Tags n'apparaît pas dans la sidebar Easy, US-0011).
+- **Indicateur multi-remotes compact sur les badges tag inline (US-0020)** : `MultiRemoteIndicator` accepte une nouvelle prop `compact: boolean`. En mode compact, seul le pictogramme synthétique global (`⬆` orange si ≥ 1 remote en absent, `✓` vert si tous présents, `?` gris si état partiellement inconnu) est rendu à droite du nom du tag — pas de popover ni de bouton, le badge entier porte le clic. `CommitList` charge la liste des remotes au mount via `listRemotesUseCase` et la propage à chaque `CommitRow`. L'indicateur ne s'affiche que si le repo a au moins un remote configuré.
+
+---
+
 ## [0.9.0] — 2026-05-14
 
 ### Added

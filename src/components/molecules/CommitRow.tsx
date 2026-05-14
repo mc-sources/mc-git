@@ -1,13 +1,15 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useGitRepository } from "../../infrastructure/GitRepositoryContext";
-import { deleteTagUseCase, createTagUseCase } from "../../usecases/tags";
+import { createTagUseCase } from "../../usecases/tags";
 import { createBranchUseCase, deleteBranchUseCase } from "../../usecases/branches";
 import { cherryPickUseCase } from "../../usecases/cherry-pick";
 import { toast } from "../../store/toastStore";
 import { useUiStore } from "../../store/uiStore";
-import type { CommitSummary, TagInfo, BranchInfo } from "../../domain/entities";
+import { useSettingsStore } from "../../store/settingsStore";
+import type { CommitSummary, TagInfo, BranchInfo, RemoteInfo } from "../../domain/entities";
 import { TagCreateDialog } from "./TagCreateDialog";
+import { MultiRemoteIndicator } from "./MultiRemoteIndicator";
 
 function formatDate(unixSec: number): string {
   return new Date(unixSec * 1000).toLocaleDateString(undefined, {
@@ -22,6 +24,7 @@ export const CommitRow = memo(function CommitRow({
   commitTags,
   commitBranches,
   remoteOnlyBranchNames,
+  remotes,
   isSelected,
   onSelect,
   onTagsChanged,
@@ -32,6 +35,7 @@ export const CommitRow = memo(function CommitRow({
   commitTags: TagInfo[];
   commitBranches: BranchInfo[];
   remoteOnlyBranchNames?: Set<string>;
+  remotes?: RemoteInfo[];
   isSelected: boolean;
   onSelect: () => void;
   onTagsChanged: () => Promise<void>;
@@ -40,7 +44,8 @@ export const CommitRow = memo(function CommitRow({
 }) {
   const { t } = useTranslation();
   const repo = useGitRepository();
-  const { setActiveView, setRepositoryState, setInteractiveRebaseFromOid } = useUiStore();
+  const { setActiveView, setRepositoryState, setInteractiveRebaseFromOid, setHighlightedTagName } = useUiStore();
+  const easyMode = useSettingsStore((s) => s.easyMode);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [cherryPicking, setCherryPicking] = useState(false);
@@ -110,15 +115,11 @@ export const CommitRow = memo(function CommitRow({
     }
   };
 
-  const handleDeleteTag = async (e: React.MouseEvent, tag: TagInfo) => {
+  const handleTagBadgeClick = (e: React.MouseEvent, tag: TagInfo) => {
+    if (easyMode) return;
     e.stopPropagation();
-    try {
-      await deleteTagUseCase(repo, tag.name);
-      await onTagsChanged();
-      toast.success(t("commitRow.tagDeleted", { name: tag.name }));
-    } catch (err) {
-      toast.error(String(err));
-    }
+    setHighlightedTagName(tag.name);
+    setActiveView("tags");
   };
 
   const handleCreateTag = async (name: string, targetOid: string, message: string | null) => {
@@ -225,31 +226,55 @@ export const CommitRow = memo(function CommitRow({
             );
           })}
 
-          {/* Tag badges */}
-          {visibleTags.map((tag) => (
-            <span
-              key={tag.name}
-              title={
-                tag.isAnnotated && tag.message
-                  ? `${tag.name}\n\n${tag.message}`
-                  : tag.name
-              }
-              className={`inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0 ${
-                tag.isAnnotated
-                  ? "bg-blue-500/15 text-blue-400"
-                  : "bg-amber-500/15 text-amber-400"
-              }`}
-            >
-              {tag.name}
-              <button
-                onClick={(e) => handleDeleteTag(e, tag)}
-                className="opacity-0 group-hover:opacity-100 hover:text-red-400 transition-opacity leading-none"
-                title={`Supprimer le tag ${tag.name}`}
+          {/* Tag badges — clic ouvre la TagList avec highlight (US-0020) ; pas de × inline */}
+          {visibleTags.map((tag) => {
+            const baseTitle =
+              tag.isAnnotated && tag.message
+                ? `${tag.name}\n\n${tag.message}`
+                : tag.name;
+            const title = easyMode
+              ? baseTitle
+              : `${baseTitle}\n\n${t("commitRow.tagBadgeClickHint")}`;
+            const hasRemotes = (remotes?.length ?? 0) > 0;
+            return (
+              <span
+                key={tag.name}
+                title={title}
+                onClick={easyMode ? undefined : (e) => handleTagBadgeClick(e, tag)}
+                role={easyMode ? undefined : "button"}
+                tabIndex={easyMode ? undefined : 0}
+                onKeyDown={
+                  easyMode
+                    ? undefined
+                    : (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setHighlightedTagName(tag.name);
+                          setActiveView("tags");
+                        }
+                      }
+                }
+                className={[
+                  "inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded shrink-0",
+                  tag.isAnnotated
+                    ? "bg-blue-500/15 text-blue-400"
+                    : "bg-amber-500/15 text-amber-400",
+                  easyMode ? "" : "cursor-pointer hover:ring-1 hover:ring-current/40 transition-shadow",
+                ].join(" ")}
               >
-                ×
-              </button>
-            </span>
-          ))}
+                {tag.name}
+                {hasRemotes && (
+                  <MultiRemoteIndicator
+                    tagName={tag.name}
+                    remotes={remotes!}
+                    onPushToRemote={async () => { /* no-op : compact mode délègue à TagList */ }}
+                    compact
+                  />
+                )}
+              </span>
+            );
+          })}
 
           {/* Overflow indicator */}
           {overflowCount > 0 && (

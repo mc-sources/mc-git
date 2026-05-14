@@ -656,8 +656,8 @@
     "cherrypickConflicts_one": "Cherry-pick appliqué avec {{count}} conflit — résolvez-le dans la vue Modifications",
     "cherrypickConflicts_other": "Cherry-pick appliqué avec {{count}} conflits — résolvez-les dans la vue Modifications",
     "tagCreated": "Tag \"{{name}}\" créé",
-    "tagDeleted": "Tag \"{{name}}\" supprimé",
     "addTag": "Ajouter un tag",
+    "tagBadgeClickHint": "Cliquer pour voir dans la liste de tags",
     "remoteOnlyBranch": "Branche distante sans équivalent local",
     "interactiveRebaseFrom": "⟳ Rebase interactif depuis ici"
   },
