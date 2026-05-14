@@ -62,7 +62,8 @@
     "menu": {
       "pushTo": "Pousser vers",
       "viewInHistory": "Voir dans l'historique",
-      "deleteLocal": "Supprimer en local"
+      "deleteLocal": "Supprimer en local",
+      "deleteRemoteOn": "Supprimer sur…"
     },
     "message": {
       "expand": "Afficher le message d'annotation",
@@ -87,6 +88,18 @@
       "done": "Tag « {{name}} » supprimé.",
       "failed": "Suppression de {{name}} échouée : {{error}}",
       "alreadyGone": "Le tag « {{name}} » a été supprimé en dehors de Mc-Git."
+    },
+    "deleteRemote": {
+      "notPresent": "Ce tag n'est présent sur aucun remote connu.",
+      "title": "⚠ Supprimer le tag « {{name}} » sur {{remote}} ?",
+      "body": "Le tag {{name}} sera supprimé de {{remote}}. Cette action est irréversible côté remote et impactera tous les collaborateurs qui ont ce tag en suivi.",
+      "checkbox": "Je comprends que cette action est irréversible et publique.",
+      "confirm": "Supprimer sur {{remote}}",
+      "cancel": "Annuler",
+      "deleting": "Suppression de {{name}} sur {{remote}}…",
+      "done": "Tag « {{name}} » supprimé de {{remote}}.",
+      "failed": "Suppression de {{name}} sur {{remote}} échouée : {{error}}",
+      "alreadyGone": "Le tag « {{name}} » était déjà absent de {{remote}}."
     },
     "push": {
       "default": "défaut",

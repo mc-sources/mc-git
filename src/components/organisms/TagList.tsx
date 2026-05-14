@@ -12,9 +12,10 @@ import {
   createTagUseCase,
   pushTagUseCase,
   deleteTagUseCase,
+  deleteRemoteTagUseCase,
 } from "../../usecases/tags";
 import { validateTagName } from "../../usecases/tags/validation";
-import { parseTagRemoteDivergent } from "../../usecases/tags/errors";
+import { parseTagRemoteDivergent, parseTagNotFoundRemote } from "../../usecases/tags/errors";
 import { listRemotesUseCase } from "../../usecases/remotes";
 import { getDefaultRemoteUseCase } from "../../usecases/config";
 import { parseAuthRequired, parseUnknownHost, parseMitmDetected } from "../../usecases/auth";
@@ -81,6 +82,21 @@ export function TagList() {
   const [deleteDialog, setDeleteDialog] = useState<TagInfo | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [deleteRemoteMenu, setDeleteRemoteMenu] = useState<{
+    tag: TagInfo;
+    remotes: string[];
+    x: number;
+    y: number;
+  } | null>(null);
+  const [deleteRemoteDialog, setDeleteRemoteDialog] = useState<{
+    tag: TagInfo;
+    remote: string;
+  } | null>(null);
+  const [deletingRemote, setDeletingRemote] = useState<{
+    tag: string;
+    remote: string;
+  } | null>(null);
+
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
 
   const toggleMessageExpansion = (tagName: string) => {
@@ -96,13 +112,16 @@ export function TagList() {
   };
 
   useEffect(() => {
-    if (!contextMenu) return;
+    if (!contextMenu && !deleteRemoteMenu) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setContextMenu(null);
+      if (e.key === "Escape") {
+        setContextMenu(null);
+        setDeleteRemoteMenu(null);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [contextMenu]);
+  }, [contextMenu, deleteRemoteMenu]);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -244,6 +263,68 @@ export function TagList() {
     const next = new Set(current ?? []);
     next.add(tagName);
     setRemoteTagPresenceForRemote(remoteName, Array.from(next));
+  };
+
+  const removeRemoteTagFromCache = (remoteName: string, tagName: string) => {
+    const current = remoteTagPresence.get(remoteName);
+    if (!current) return;
+    const next = Array.from(current).filter((name) => name !== tagName);
+    setRemoteTagPresenceForRemote(remoteName, next);
+  };
+
+  const performDeleteRemote = async (tag: TagInfo, remoteName: string) => {
+    setDeletingRemote({ tag: tag.name, remote: remoteName });
+    try {
+      await deleteRemoteTagUseCase(repo, remoteName, tag.name);
+      toast.success(
+        t("tags.deleteRemote.done", { name: tag.name, remote: remoteName }),
+      );
+      removeRemoteTagFromCache(remoteName, tag.name);
+      setDeleteRemoteDialog(null);
+      bumpLogVersion();
+    } catch (err) {
+      const errStr = String(err);
+      const notFound = parseTagNotFoundRemote(errStr);
+      if (notFound) {
+        toast.info(
+          t("tags.deleteRemote.alreadyGone", {
+            name: tag.name,
+            remote: remoteName,
+          }),
+        );
+        removeRemoteTagFromCache(remoteName, tag.name);
+        setDeleteRemoteDialog(null);
+        bumpLogVersion();
+        return;
+      }
+      const authHost = parseAuthRequired(errStr);
+      const unknownHost = parseUnknownHost(errStr);
+      const mitm = parseMitmDetected(errStr);
+      if (authHost) {
+        showAuthModal(authHost);
+      } else if (unknownHost) {
+        showTofuModal(unknownHost.host, unknownHost.fingerprint, () =>
+          performDeleteRemote(tag, remoteName),
+        );
+      } else if (mitm) {
+        toast.error(
+          t("sshTofu.mitmWarning", {
+            host: mitm.host,
+            fingerprint: mitm.fingerprint,
+          }),
+        );
+      } else {
+        toast.error(
+          t("tags.deleteRemote.failed", {
+            name: tag.name,
+            remote: remoteName,
+            error: errStr,
+          }),
+        );
+      }
+    } finally {
+      setDeletingRemote(null);
+    }
   };
 
   const performPush = async (tagName: string, remoteName: string, force: boolean) => {
@@ -641,8 +722,77 @@ export function TagList() {
             >
               {t("tags.menu.deleteLocal")}
             </button>
+            {(() => {
+              const tagRemotes = presentOnRemotesFor(contextMenu.tag.name);
+              const disabled = tagRemotes.length === 0;
+              return (
+                <button
+                  disabled={disabled}
+                  title={disabled ? t("tags.deleteRemote.notPresent") : undefined}
+                  onClick={(e) => {
+                    if (disabled) return;
+                    const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+                    setDeleteRemoteMenu({
+                      tag: contextMenu.tag,
+                      remotes: tagRemotes,
+                      x: rect.right,
+                      y: rect.top,
+                    });
+                    setContextMenu(null);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-surface-hover transition-colors disabled:text-red-400/40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                >
+                  {t("tags.menu.deleteRemoteOn")}
+                </button>
+              );
+            })()}
           </div>
         </>
+      )}
+
+      {deleteRemoteMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setDeleteRemoteMenu(null)} />
+          <div
+            style={{ top: deleteRemoteMenu.y, left: Math.max(8, deleteRemoteMenu.x - 200) }}
+            className="fixed z-50 bg-surface-elevated border border-red-500/30 rounded-lg shadow-2xl py-1 min-w-52 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-[10px] text-text-muted uppercase tracking-widest px-3 py-1.5 font-medium">
+              {t("tags.menu.deleteRemoteOn")}
+            </p>
+            {deleteRemoteMenu.remotes.map((remoteName) => (
+              <button
+                key={remoteName}
+                onClick={() => {
+                  const target = { tag: deleteRemoteMenu.tag, remote: remoteName };
+                  setDeleteRemoteMenu(null);
+                  setDeleteRemoteDialog(target);
+                }}
+                className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-surface-hover transition-colors"
+              >
+                {remoteName}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {deleteRemoteDialog && (
+        <TagDeleteDialog
+          mode="remote"
+          tag={deleteRemoteDialog.tag}
+          presentOnRemotes={[]}
+          remote={deleteRemoteDialog.remote}
+          loading={
+            deletingRemote?.tag === deleteRemoteDialog.tag.name &&
+            deletingRemote?.remote === deleteRemoteDialog.remote
+          }
+          onClose={() => setDeleteRemoteDialog(null)}
+          onConfirm={() =>
+            performDeleteRemote(deleteRemoteDialog.tag, deleteRemoteDialog.remote)
+          }
+        />
       )}
 
       {deleteDialog && (
