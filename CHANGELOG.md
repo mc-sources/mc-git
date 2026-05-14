@@ -10,6 +10,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.9.0] — 2026-05-14
+
+### Added
+
+- **Suppression d'un tag sur un remote (US-0018)** : extension du menu contextuel `TagList` avec un item rouge « Supprimer sur… » dans la section destructive, qui ouvre un sous-menu listant uniquement les remotes où le tag est connu présent (lu depuis `gitStore.remoteTagPresence` — les remotes en état `?` jamais fetché ne sont pas proposés). Item désactivé avec tooltip si le tag n'est présent sur aucun remote connu. Le choix d'un remote ouvre la nouvelle variante `mode="remote"` de `TagDeleteDialog` (mutualisée avec la variante locale d'US-0014) : header rouge ⚠, body explicite, checkbox obligatoire « Je comprends que cette action est irréversible et publique » qui active le bouton « Supprimer sur <remote> ». Au confirm : `deleteRemoteTagUseCase` puis mise à jour de `gitStore.remoteTagPresence` (retrait du tag) et toast succès. Gestion auth/TOFU/MITM héritée du pattern existant (push tag US-0017). Pas d'action multi-remotes en une seule fois (décision T-0004 §Q10) — l'opération reste explicite par remote.
+
+### Changed
+
+- **`delete_remote_tag` (Rust) — détection structurée de la race « tag déjà absent du remote »** : pré-check via `remote_tag_commit_oid` avant le push de suppression. Si le tag est absent côté remote (autre instance ou `git push` concurrent qui l'a déjà supprimé), retourne `AppError::Other("TAG_NOT_FOUND_REMOTE:<remote>:<tag>")` au lieu du no-op silencieux que pratique libgit2 dans ce cas. Côté frontend, le helper `parseTagNotFoundRemote` (nouveau, `src/usecases/tags/errors.ts`) décode ce préfixe ; `TagList` traite la race comme un succès silencieux (toast info `tags.deleteRemote.alreadyGone`, mise à jour du cache, pas de toast erreur). Cas spécial `file://` : suppression directe via `Repository::open` + `Reference::delete` (cohérent avec la pré-check, et évite un UB connu de libgit2 0.19 sur les push de suppression répétés sur file://).
+
+---
+
 ## [0.8.0] — 2026-05-13
 
 ### Added

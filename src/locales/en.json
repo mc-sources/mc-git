@@ -62,7 +62,8 @@
     "menu": {
       "pushTo": "Push to",
       "viewInHistory": "View in history",
-      "deleteLocal": "Delete locally"
+      "deleteLocal": "Delete locally",
+      "deleteRemoteOn": "Delete on…"
     },
     "message": {
       "expand": "Show annotation message",
@@ -87,6 +88,18 @@
       "done": "Tag \"{{name}}\" deleted.",
       "failed": "Deletion of {{name}} failed: {{error}}",
       "alreadyGone": "Tag \"{{name}}\" was deleted outside of Mc-Git."
+    },
+    "deleteRemote": {
+      "notPresent": "This tag is not present on any known remote.",
+      "title": "⚠ Delete tag \"{{name}}\" on {{remote}}?",
+      "body": "Tag {{name}} will be removed from {{remote}}. This action is irreversible on the remote and will impact every collaborator tracking this tag.",
+      "checkbox": "I understand that this action is irreversible and public.",
+      "confirm": "Delete on {{remote}}",
+      "cancel": "Cancel",
+      "deleting": "Deleting {{name}} on {{remote}}…",
+      "done": "Tag \"{{name}}\" deleted from {{remote}}.",
+      "failed": "Deletion of {{name}} on {{remote}} failed: {{error}}",
+      "alreadyGone": "Tag \"{{name}}\" was already absent from {{remote}}."
     },
     "push": {
       "default": "default",

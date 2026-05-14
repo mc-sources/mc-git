@@ -280,7 +280,44 @@ pub fn push_all_tags(repo: &Repository, remote_name: &str) -> Result<Vec<TagPush
     Ok(reported)
 }
 
+/// Supprime un tag côté remote (`git push <remote> :refs/tags/<tag>`).
+///
+/// Effectue un pré-check via `remote_tag_commit_oid` pour distinguer le cas
+/// « tag déjà absent du remote » (race avec une autre instance / `git push`
+/// concurrent) — sémantiquement un no-op silencieux côté libgit2/git — d'un
+/// vrai succès de suppression. Sans ce pré-check, l'UI ne pourrait pas
+/// afficher un toast info différencié et le cache de présence remote
+/// resterait potentiellement désynchronisé.
+///
+/// En cas d'absence détectée, retourne `AppError::Other("TAG_NOT_FOUND_REMOTE:
+/// <remote>:<tag>")` (préfixe parsable côté frontend via
+/// `parseTagNotFoundRemote`). Le frontend traite cette erreur comme un succès
+/// silencieux : toast info + nettoyage du cache.
 pub fn delete_remote_tag(repo: &Repository, remote_name: &str, tag_name: &str) -> Result<()> {
+    if remote_tag_commit_oid(repo, remote_name, tag_name)?.is_none() {
+        return Err(AppError::Other(format!(
+            "TAG_NOT_FOUND_REMOTE:{remote_name}:{tag_name}"
+        )));
+    }
+
+    let url = repo
+        .find_remote(remote_name)?
+        .url()
+        .map(|s| s.to_string())
+        .unwrap_or_default();
+
+    if let Some(path) = parse_file_url(&url) {
+        // Pour les URLs file://, on opère directement sur le bare repo, comme
+        // dans `remote_tag_commit_oid`. Cela évite un UB connu de libgit2 0.19
+        // sur la phase de négociation lors d'un push de suppression
+        // (`:refs/tags/<tag>`) répété sur file:// dans un même process, et
+        // reste sémantiquement équivalent côté serveur (suppression de la ref).
+        let remote_repo = git2::Repository::open(&path)?;
+        let mut reference = remote_repo.find_reference(&format!("refs/tags/{tag_name}"))?;
+        reference.delete()?;
+        return Ok(());
+    }
+
     let mut remote = repo.find_remote(remote_name)?;
     let (callbacks, cert_err) = build_callbacks();
     let mut push_opts = git2::PushOptions::new();
@@ -595,6 +632,64 @@ mod tests {
         let results = push_all_tags(&local_repo, "origin").unwrap();
 
         assert!(results.is_empty());
+    }
+
+    #[test]
+    fn delete_remote_tag_succeeds_when_present() {
+        let (_local_tmp, _bare_tmp, local_repo) = setup_local_with_bare_remote(&["v1.0.0"]);
+        push_tag(&local_repo, "origin", "v1.0.0", false).unwrap();
+
+        // Sanity check : le tag est bien présent côté remote avant la suppression.
+        assert!(remote_tag_commit_oid(&local_repo, "origin", "v1.0.0")
+            .unwrap()
+            .is_some());
+
+        delete_remote_tag(&local_repo, "origin", "v1.0.0").unwrap();
+
+        // Vérification : le tag a disparu du bare repo. On utilise
+        // remote_tag_commit_oid plutôt que list_remote_tags car list_remote_tags
+        // appelle connect_auth+list sur file://, ce qui déclenche un UB connu de
+        // libgit2 0.19 lors d'usages répétés dans un même process (cf. commentaire
+        // remote_tag_commit_oid).
+        assert!(
+            remote_tag_commit_oid(&local_repo, "origin", "v1.0.0")
+                .unwrap()
+                .is_none(),
+            "expected v1.0.0 removed from remote"
+        );
+    }
+
+    #[test]
+    fn delete_remote_tag_returns_not_found_when_absent_remote() {
+        // Tag local existe mais n'a jamais été poussé : delete remote doit
+        // retourner l'erreur synthétique TAG_NOT_FOUND_REMOTE (cf. REQ-TAG-H15
+        // pour le pattern de détection de race).
+        let (_local_tmp, _bare_tmp, local_repo) = setup_local_with_bare_remote(&["v1.0.0"]);
+
+        let err = delete_remote_tag(&local_repo, "origin", "v1.0.0").unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("TAG_NOT_FOUND_REMOTE:origin:v1.0.0"),
+            "expected synthetic TAG_NOT_FOUND_REMOTE error, got {msg}"
+        );
+    }
+
+    #[test]
+    fn delete_remote_tag_returns_not_found_after_concurrent_deletion() {
+        // Simule une race : le tag a été poussé puis supprimé du remote par
+        // un autre acteur (ici on le retire directement du bare repo). Le
+        // delete suivant doit également retourner TAG_NOT_FOUND_REMOTE et non
+        // un succès trompeur.
+        let (_local_tmp, _bare_tmp, local_repo) = setup_local_with_bare_remote(&["v1.0.0"]);
+        push_tag(&local_repo, "origin", "v1.0.0", false).unwrap();
+        delete_remote_tag(&local_repo, "origin", "v1.0.0").unwrap();
+
+        let err = delete_remote_tag(&local_repo, "origin", "v1.0.0").unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("TAG_NOT_FOUND_REMOTE:origin:v1.0.0"),
+            "expected synthetic TAG_NOT_FOUND_REMOTE on second delete, got {msg}"
+        );
     }
 
     #[test]
