@@ -14,6 +14,11 @@ interface MultiRemoteIndicatorProps {
   tagName: string;
   remotes: RemoteInfo[];
   onPushToRemote: (remoteName: string) => Promise<void>;
+  /**
+   * Mode compact (US-0020) : pictogramme synthétique seul, sans popover ni interaction
+   * propre — l'élément parent (badge tag inline) porte le clic vers la TagList.
+   */
+  compact?: boolean;
 }
 
 interface RemoteSlot {
@@ -37,6 +42,7 @@ export function MultiRemoteIndicator({
   tagName,
   remotes,
   onPushToRemote,
+  compact = false,
 }: MultiRemoteIndicatorProps) {
   const { t } = useTranslation();
   const repo = useGitRepository();
@@ -152,6 +158,31 @@ export function MultiRemoteIndicator({
       </button>
     );
   };
+
+  if (compact) {
+    let glyph: string;
+    let color: string;
+
+    if (absentRemotes.length === 0 && unknownRemotes.length === 0) {
+      glyph = STATUS_GLYPH.present;
+      color = STATUS_COLOR.present;
+    } else if (absentRemotes.length > 0) {
+      glyph = STATUS_GLYPH.absent;
+      color = STATUS_COLOR.absent;
+    } else {
+      glyph = STATUS_GLYPH.unknown;
+      color = STATUS_COLOR.unknown;
+    }
+
+    return (
+      <span
+        className={`${color} text-[10px] font-mono leading-none select-none`}
+        aria-hidden
+      >
+        {glyph}
+      </span>
+    );
+  }
 
   return (
     <>

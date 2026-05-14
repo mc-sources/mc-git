@@ -10,8 +10,9 @@ import { getRepoInfoUseCase } from "../../usecases/repository";
 import type { CommitFilters } from "../../usecases/history";
 import { listTagsUseCase } from "../../usecases/tags";
 import { listBranchesUseCase } from "../../usecases/branches";
+import { listRemotesUseCase } from "../../usecases/remotes";
 import { computeGraphLayout } from "../../usecases/graph";
-import type { CommitSummary, BranchInfo, TagInfo } from "../../domain/entities";
+import type { CommitSummary, BranchInfo, TagInfo, RemoteInfo } from "../../domain/entities";
 import type { GraphEntry } from "../../usecases/graph";
 import { CommitRow } from "../molecules/CommitRow";
 import { GraphCell } from "../atoms/GraphCell";
@@ -56,6 +57,8 @@ export function CommitList() {
   const [localOids, setLocalOids] = useState<Set<string>>(new Set());
   // Whether more graph commits exist beyond the loaded limit
   const [graphHasMore, setGraphHasMore] = useState(false);
+  // Remotes (for inline tag indicator) — loaded once on mount, refreshed on logVersion change
+  const [remotes, setRemotes] = useState<RemoteInfo[]>([]);
   // Scroll position for virtual windowing
   const [scrollTop, setScrollTop] = useState(0);
 
@@ -87,6 +90,18 @@ export function CommitList() {
       // non-fatal
     }
   }, [repo, setBranches]);
+
+  const refreshRemotes = useCallback(async () => {
+    try {
+      setRemotes(await listRemotesUseCase(repo));
+    } catch {
+      // non-fatal — l'indicateur compact se masque tout seul si remotes est vide
+    }
+  }, [repo]);
+
+  useEffect(() => {
+    refreshRemotes();
+  }, [refreshRemotes]);
 
   const loadInitial = useCallback(async () => {
     const path = currentRepo?.path;
@@ -482,6 +497,7 @@ export function CommitList() {
                   commitTags={tagIndex.get(commit.oid) ?? []}
                   commitBranches={branchIndex.get(commit.oid) ?? []}
                   remoteOnlyBranchNames={remoteOnlyBranchNames}
+                  remotes={remotes}
                   isSelected={selectedCommitOid === commit.oid}
                   onSelect={() => handleSelect(commit)}
                   onTagsChanged={refreshTags}
