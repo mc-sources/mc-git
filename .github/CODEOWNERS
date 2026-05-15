@@ -1,0 +1,33 @@
+# Mc-Git — Code owners
+#
+# This file controls automatic reviewer assignment on pull requests.
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Order matters: the *last* matching pattern takes precedence.
+# Patterns follow .gitignore syntax (but only file globs, not negations).
+#
+# NOTE: replace `@mc-sources/maintainers` with the actual GitHub team or
+# individual handle if no `maintainers` team exists on the `mc-sources` org.
+
+# Default owner — every PR is assigned to the maintainers team unless a more
+# specific rule below overrides it.
+*                               @mc-sources/maintainers
+
+# CI / release workflows — change with care, only maintainers should review.
+/.github/workflows/             @mc-sources/maintainers
+
+# Community standards — code of conduct, contribution policy, security policy.
+/CODE_OF_CONDUCT.md             @mc-sources/maintainers
+/CONTRIBUTING.md                @mc-sources/maintainers
+/SECURITY.md                    @mc-sources/maintainers
+/SUPPORT.md                     @mc-sources/maintainers
+/.github/                       @mc-sources/maintainers
+
+# Rust backend
+/src-tauri/                     @mc-sources/maintainers
+
+# Frontend
+/src/                           @mc-sources/maintainers
+
+# Specs and architecture documents
+/docs/                          @mc-sources/maintainers

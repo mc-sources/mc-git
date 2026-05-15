@@ -1,0 +1,108 @@
+name: Bug report
+description: Report a defect in Mc-Git
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the fields below — the more precise your report, the faster we can act on it.
+
+        **Before submitting**: have you searched [existing issues](https://github.com/mc-sources/mc-git/issues?q=is%3Aissue) (open and closed) for a similar report?
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm the following before opening the issue.
+      options:
+        - label: I have searched existing issues and did not find a duplicate.
+          required: true
+        - label: I am running the latest released version or the latest `dev` branch.
+          required: true
+        - label: This is **not** a security vulnerability (those go to SECURITY.md).
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Mc-Git version
+      description: Visible in the *About* dialog, or `npm run tauri --version` in a dev checkout. Include the commit SHA if you built from source.
+      placeholder: "e.g. 0.10.0 (commit 2d7185a)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version / distribution
+      placeholder: "e.g. Debian 12, macOS 14.4, Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal, deterministic steps that lead to the bug.
+      value: |
+        1. Open Mc-Git…
+        2. …
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include error messages, copied as text when possible. Screenshots or recordings welcome as a complement.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repo-context
+    attributes:
+      label: Repository / Git state
+      description: When relevant — repo size, presence of submodules, LFS, unusual branch state, remote configuration, etc.
+      placeholder: "e.g. local repo with 2 remotes, ~10k commits, 1 submodule"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant console output, Tauri logs, or stack traces. Wrap long output in `<details>` tags.
+      render: text
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that might help — workarounds you tried, links to related issues, screenshots.
