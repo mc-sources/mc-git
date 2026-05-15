@@ -1,0 +1,69 @@
+name: Feature request
+description: Suggest an idea or enhancement for Mc-Git
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a feature! Mc-Git favors **clean, predictable workflows** over feature creep. Features that significantly increase UI complexity may be deferred or declined even if technically interesting — but a clear proposal helps us evaluate them on their merits.
+
+        **Before submitting**: have you searched [existing issues](https://github.com/mc-sources/mc-git/issues?q=is%3Aissue) (open and closed) for a similar idea?
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      options:
+        - label: I have searched existing issues and did not find a duplicate.
+          required: true
+        - label: I have read the project's vision in the README and CONTRIBUTING.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem you are trying to solve
+      description: Describe the user-level problem first. What are you trying to do, and what's getting in your way today?
+      placeholder: "When I do X in Mc-Git, I want to Y, but currently I have to Z."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like Mc-Git to behave? UI mockups, command names, sample interactions all welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about, including doing nothing or using an existing Mc-Git workflow.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Estimated scope
+      description: Best guess — maintainers will refine during triage.
+      options:
+        - Small (single command / small UI tweak)
+        - Medium (new workflow or panel)
+        - Large (new subsystem, multi-US epic)
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Prior art / references
+      description: Links to similar features in other Git clients (GitKraken, Sublime Merge, Sourcetree, Fork…), articles, RFCs, etc.
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Anything else that helps us evaluate the proposal — screenshots, diagrams, sample data.

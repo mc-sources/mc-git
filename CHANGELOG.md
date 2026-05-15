@@ -10,6 +10,25 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Le vers
 
 ---
 
+## [0.11.0] — 2026-05-15
+
+### Added
+
+- **Standards communautaires GitHub (US-114-01)** : mise à niveau du dépôt aux standards d'un repo GitHub de référence.
+  - `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1 (contact d'enforcement : `git.security@martingatignol.fr`).
+  - `SECURITY.md` — politique de divulgation responsable, canal privé, fenêtres de réponse, scope.
+  - `SUPPORT.md` — orientation des demandes (bugs / features / questions / sécurité / contribution) vers le bon canal.
+  - `CONTRIBUTING.md` — guide de contribution (setup, conventions Clean Architecture, Conventional Commits, branch naming, PR process, versioning).
+  - `.github/ISSUE_TEMPLATE/bug_report.yml` — formulaire structuré (version, OS, repro, logs).
+  - `.github/ISSUE_TEMPLATE/feature_request.yml` — formulaire structuré (problème, proposition, scope, prior art).
+  - `.github/ISSUE_TEMPLATE/config.yml` — désactivation des blank issues, liens contact (Discussions, sécurité, CONTRIBUTING).
+  - `.github/PULL_REQUEST_TEMPLATE.md` — résumé, type de changement, plan de test, checklist (version bump, CHANGELOG, Clean Architecture, garde CLI `git`).
+  - `.github/CODEOWNERS` — auto-assignation des reviewers (par défaut + par zone : workflows, community files, backend, frontend, docs).
+  - `.github/dependabot.yml` — veille hebdomadaire cargo (avec groupes `tauri-stack`, `git2-stack`) + npm (avec groupes `react-stack`, `tauri-js`, `vite-stack`, `tailwind-stack`) + github-actions.
+- **`docs/community-standards.md`** : checklist exhaustive (28 items) et grille d'audit *présent / à améliorer / absent / vérification UI* du dépôt par rapport aux standards GitHub. Sert de référence vivante pour les audits ultérieurs. Inclut le reste-à-faire **côté interface GitHub** (description, topics, branch protection, Discussions, advisories — section D).
+
+---
+
 ## [0.10.0] — 2026-05-14
 
 ### Changed
